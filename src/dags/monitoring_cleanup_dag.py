@@ -29,8 +29,10 @@ Variables.
 """
 
 import os
-from airflow import models
+from typing import Optional
+
 from airflow.exceptions import AirflowException
+from airflow.models import dag
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import monitoring_cleanup_operator
@@ -47,7 +49,7 @@ _DAG_SCHEDULE = '@once'
 class MonitoringCleanupDag(base_dag.BaseDag):
   """DAG to run monitoring table cleanup."""
 
-  def create_dag(self) -> models.DAG:
+  def create_dag(self) -> dag.DAG:
     """Creates the monitoring cleanup DAG and attaches the cleanup task.
 
     Returns:
@@ -64,8 +66,11 @@ class MonitoringCleanupDag(base_dag.BaseDag):
 
     return main_dag
 
-  def create_task(self, main_dag: models.DAG = None, is_retry: bool = False
-                 ) -> monitoring_cleanup_operator.MonitoringCleanupOperator:
+  def create_task(
+      self,
+      main_dag: Optional[dag.DAG] = None,
+      is_retry: bool = False
+  ) -> monitoring_cleanup_operator.MonitoringCleanupOperator:
     """Creates and initializes the cleanup task.
 
     Args:

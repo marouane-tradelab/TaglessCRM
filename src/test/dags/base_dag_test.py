@@ -20,8 +20,9 @@ import datetime
 import unittest
 from unittest import mock
 
-from airflow import models
 from airflow.exceptions import AirflowException
+from airflow.models import dag
+from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import error_report_operator
@@ -31,7 +32,7 @@ class FakeDag(base_dag.BaseDag):
 
   def create_task(
       self,
-      main_dag: models.DAG = None,
+      main_dag: dag.DAG = None,
       is_retry: bool = False) -> error_report_operator.ErrorReportOperator:
     return error_report_operator.ErrorReportOperator(
         task_id='configuration_error',
@@ -47,7 +48,7 @@ class BaseDagTest(unittest.TestCase):
 
     self.addCleanup(mock.patch.stopall)
     self.mock_variable = mock.patch.object(
-        models, 'Variable', autospec=True).start()
+        variable, 'Variable', autospec=True).start()
 
     def mock_get(_, fallback=None):
       return fallback
@@ -57,13 +58,13 @@ class BaseDagTest(unittest.TestCase):
   def test_init(self):
     fake_dag = FakeDag(self.dag_name)
 
-    dag = fake_dag.create_dag()
+    test_dag = fake_dag.create_dag()
 
-    self.assertEqual(dag.default_args['retries'], base_dag._DAG_RETRIES)
+    self.assertEqual(test_dag.default_args['retries'], base_dag._DAG_RETRIES)
     self.assertEqual(
-        dag.default_args['retry_delay'], datetime.timedelta(
+        test_dag.default_args['retry_delay'], datetime.timedelta(
             minutes=base_dag._DAG_RETRY_DELAY_MINUTES))
-    self.assertEqual(dag.schedule_interval, base_dag._DAG_SCHEDULE)
+    self.assertEqual(test_dag.schedule_interval, base_dag._DAG_SCHEDULE)
 
   def test_create_dag_successfully(self):
     self.dag.create_task = mock.MagicMock()

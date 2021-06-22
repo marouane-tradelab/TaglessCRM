@@ -18,8 +18,10 @@
 
 import unittest
 
-from airflow import models
 from airflow.contrib.hooks import bigquery_hook
+from airflow.models import baseoperator
+from airflow.models import dag
+from airflow.models import variable
 import mock
 
 from gps_building_blocks.cloud.utils import cloud_auth
@@ -59,7 +61,7 @@ class BQToCMDAGTest(unittest.TestCase):
     self.build_impersonated_client_mock.return_value = mock.Mock()
     self.build_impersonated_client_mock.start()
     self.mock_variable = mock.patch.object(
-        models, 'Variable', autospec=True).start()
+        variable, 'Variable', autospec=True).start()
     # `side_effect` is assigned to `lambda` to dynamically return values
     # each time when self.mock_variable is called.
     self.mock_variable.get.side_effect = (
@@ -80,14 +82,14 @@ class BQToCMDAGTest(unittest.TestCase):
     """Tests that returned DAG contains correct DAG and tasks."""
     expected_task_ids = ['bq_to_cm_retry_task', 'bq_to_cm_task']
 
-    dag = bq_to_cm_dag.BigQueryToCMDag(
+    test_dag = bq_to_cm_dag.BigQueryToCMDag(
         AIRFLOW_VARIABLES['dag_name']).create_dag()
 
-    self.assertIsInstance(dag, models.DAG)
-    self.assertEqual(len(dag.tasks), len(expected_task_ids))
-    for task in dag.tasks:
-      self.assertIsInstance(task, models.BaseOperator)
-    actual_task_ids = [t.task_id for t in dag.tasks]
+    self.assertIsInstance(test_dag, dag.DAG)
+    self.assertEqual(len(test_dag.tasks), len(expected_task_ids))
+    for task in test_dag.tasks:
+      self.assertIsInstance(task, baseoperator.BaseOperator)
+    actual_task_ids = [t.task_id for t in test_dag.tasks]
     self.assertListEqual(actual_task_ids, expected_task_ids)
 
 

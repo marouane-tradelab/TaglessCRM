@@ -31,7 +31,10 @@ Variables.
 """
 
 import os
-from airflow import models
+from typing import Optional
+
+from airflow.models import dag
+from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -52,8 +55,10 @@ _BQ_CONN_ID = 'bigquery_default'
 class BigQueryToAdsOCDag(base_dag.BaseDag):
   """BigQuery to Google Ads Offline Conversion DAG."""
 
-  def create_task(self, main_dag: models.DAG = None, is_retry: bool = False
-                 ) -> data_connector_operator.DataConnectorOperator:
+  def create_task(
+      self,
+      main_dag: Optional[dag.DAG] = None,
+      is_retry: bool = False) -> data_connector_operator.DataConnectorOperator:
     """Creates and initializes the main DAG.
 
     Args:
@@ -75,9 +80,9 @@ class BigQueryToAdsOCDag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=models.Variable.get('bq_dataset_id', ''),
-        bq_table_id=models.Variable.get('bq_table_id', ''),
-        ads_credentials=models.Variable.get('ads_credentials', ''),
+        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
+        bq_table_id=variable.Variable.get('bq_table_id', ''),
+        ads_credentials=variable.Variable.get('ads_credentials', ''),
         dag=main_dag)
 
 

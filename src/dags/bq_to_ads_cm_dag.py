@@ -41,7 +41,10 @@ Variables.
 """
 
 import os
-from airflow import models
+from typing import Optional
+
+from airflow.models import dag
+from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -67,8 +70,10 @@ _ADS_MEMBERSHIP_LIFESPAN_DAYS = 8
 class BigQueryToAdsCMDag(base_dag.BaseDag):
   """BigQuery to Google Ads Customer Match DAG."""
 
-  def create_task(self, main_dag: models.DAG = None, is_retry: bool = False
-                 ) -> data_connector_operator.DataConnectorOperator:
+  def create_task(
+      self,
+      main_dag: Optional[dag.DAG] = None,
+      is_retry: bool = False) -> data_connector_operator.DataConnectorOperator:
     """Creates and initializes the main DAG.
 
     Args:
@@ -90,15 +95,16 @@ class BigQueryToAdsCMDag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=models.Variable.get('bq_dataset_id', ''),
-        bq_table_id=models.Variable.get('bq_table_id', ''),
-        ads_credentials=models.Variable.get('ads_credentials', ''),
-        ads_upload_key_type=models.Variable.get('ads_upload_key_type', ''),
-        ads_cm_app_id=models.Variable.get('ads_cm_app_id', None),
-        ads_cm_create_list=models.Variable.get('ads_cm_create_list', True),
-        ads_cm_membership_lifespan=models.Variable.get(
+        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
+        bq_table_id=variable.Variable.get('bq_table_id', ''),
+        ads_credentials=variable.Variable.get('ads_credentials', ''),
+        ads_upload_key_type=variable.Variable.get('ads_upload_key_type', ''),
+        ads_cm_app_id=variable.Variable.get('ads_cm_app_id', None),
+        ads_cm_create_list=variable.Variable.get('ads_cm_create_list', True),
+        ads_cm_membership_lifespan=variable.Variable.get(
             'ads_cm_membership_lifespan', _ADS_MEMBERSHIP_LIFESPAN_DAYS),
-        ads_cm_user_list_name=models.Variable.get('ads_cm_user_list_name', ''),
+        ads_cm_user_list_name=variable.Variable.get('ads_cm_user_list_name',
+                                                    ''),
         dag=main_dag)
 
 

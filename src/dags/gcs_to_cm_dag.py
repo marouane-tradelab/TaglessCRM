@@ -32,7 +32,10 @@ Variables.
 """
 
 import os
-from airflow import models
+from typing import Optional
+
+from airflow.models import dag
+from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -51,8 +54,10 @@ _GCS_CONTENT_TYPE = 'JSON'
 class GCSToCMDag(base_dag.BaseDag):
   """Cloud Storage to Campaign Manager DAG."""
 
-  def create_task(self, main_dag: models.DAG = None, is_retry: bool = False
-                 ) -> data_connector_operator.DataConnectorOperator:
+  def create_task(
+      self,
+      main_dag: Optional[dag.DAG] = None,
+      is_retry: bool = False) -> data_connector_operator.DataConnectorOperator:
     """Creates and initializes the main DAG.
 
     Args:
@@ -74,12 +79,12 @@ class GCSToCMDag(base_dag.BaseDag):
         monitoring_dataset=self.monitoring_dataset,
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
-        gcs_bucket=models.Variable.get('gcs_bucket_name', ''),
-        gcs_prefix=models.Variable.get('gcs_bucket_prefix', ''),
-        gcs_content_type=models.Variable.get('gcs_content_type',
-                                             _GCS_CONTENT_TYPE).upper(),
-        cm_service_account=models.Variable.get('cm_service_account', ''),
-        cm_profile_id=models.Variable.get('cm_profile_id', ''),
+        gcs_bucket=variable.Variable.get('gcs_bucket_name', ''),
+        gcs_prefix=variable.Variable.get('gcs_bucket_prefix', ''),
+        gcs_content_type=variable.Variable.get('gcs_content_type',
+                                               _GCS_CONTENT_TYPE).upper(),
+        cm_service_account=variable.Variable.get('cm_service_account', ''),
+        cm_profile_id=variable.Variable.get('cm_profile_id', ''),
         dag=main_dag)
 
 

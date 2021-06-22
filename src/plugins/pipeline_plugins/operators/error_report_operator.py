@@ -15,15 +15,19 @@
 # limitations under the License.
 """Custom operator for reporting configuration errors."""
 import logging
+import typing
 from typing import Any, Dict
 
+import airflow
 from airflow import models
 
 
 class ErrorReportOperator(models.BaseOperator):
   """Custom operator for reporting configuration errors."""
 
-  def __init__(self, task_id: str, error: Exception, dag: models.DAG = None
+  def __init__(self, task_id: str,
+               error: Exception,
+               dag: typing.Optional[airflow.models.dag.DAG] = None
                ) -> None:
     """Initiates the ErrorReportOperator.
 

@@ -18,8 +18,10 @@
 
 import unittest
 
-from airflow import models
 from airflow.contrib.hooks import bigquery_hook
+from airflow.models import baseoperator
+from airflow.models import dag
+from airflow.models import variable
 import mock
 
 from dags import monitoring_cleanup_dag as monitoring_cleanup_dag_lib
@@ -56,7 +58,7 @@ class MonitoringCleanupDagTest(unittest.TestCase):
     super().setUp()
     self.addCleanup(mock.patch.stopall)
     self.mock_variable = mock.patch.object(
-        models, 'Variable', autospec=True).start()
+        variable, 'Variable', autospec=True).start()
     # `side_effect` is assigned to `lambda` to dynamically return values
     # each time when self.mock_variable is called.
     self.mock_variable.get.side_effect = (
@@ -80,10 +82,10 @@ class MonitoringCleanupDagTest(unittest.TestCase):
     monitoring_cleanup_dag = monitoring_cleanup_dag_lib.MonitoringCleanupDag(
         AIRFLOW_VARIABLES['dag_name']).create_dag()
 
-    self.assertIsInstance(monitoring_cleanup_dag, models.DAG)
+    self.assertIsInstance(monitoring_cleanup_dag, dag.DAG)
     self.assertEqual(len(monitoring_cleanup_dag.tasks), len(expected_task_ids))
     for task in monitoring_cleanup_dag.tasks:
-      self.assertIsInstance(task, models.BaseOperator)
+      self.assertIsInstance(task, baseoperator.BaseOperator)
     for idx, task_id in enumerate(expected_task_ids):
       self.assertEqual(monitoring_cleanup_dag.tasks[idx].task_id, task_id)
 
