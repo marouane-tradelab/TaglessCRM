@@ -38,7 +38,7 @@ _IS_RETRY = _TEST_DAG_NAME + '_is_retry'
 _IS_RUN = _TEST_DAG_NAME + '_is_run'
 _MONITORING_DATASET_KEY = 'monitoring_dataset'
 _MONITORING_DATATABLE_KEY = 'monitoring_table'
-_MONITORING_DATASET_VALUE = 'system_test'
+_MONITORING_DATASET_VALUE = 'tcrm_monitoring_dataset'
 _MONITORING_DATATABLE_VALUE = 'tcrm_monitoring_table'
 
 
@@ -73,13 +73,9 @@ def test_for_retry_system(configuration):
       _MONITORING_DATATABLE_KEY, _MONITORING_DATATABLE_VALUE)
 
   project_id = configuration[_BQ_PROJECT_ID]
-  key_path = os.path.join(
-      system_testing_utils.get_airflow_home(), 'key.json')
 
   system_testing_utils.create_or_update_airflow_gcp_connection(
-      _BQ_CONN_DEFAULT, project_id, key_path)
-  system_testing_utils.create_or_update_airflow_gcp_connection(
-      _GCD_CONN_DEFAULT, project_id, key_path)
+      _BQ_CONN_DEFAULT, project_id)
 
   source_table_id = (project_id + '.' + configuration[_BQ_DATASET_ID] + '.' +
                      configuration[_BQ_TABLE_ID])

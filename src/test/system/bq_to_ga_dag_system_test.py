@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""System test for dags.bq_to_ga_dag."""
+"""System tests for dags.bq_to_ga_dag."""
 
 import datetime
 import os
@@ -64,13 +64,9 @@ def test_bq_to_ga_dag_system(configuration):
       _IS_RUN, 1)
 
   project_id = configuration[_BQ_PROJECT_ID]
-  key_path = os.path.join(
-      system_testing_utils.get_airflow_home(), 'key.json')
 
   system_testing_utils.create_or_update_airflow_gcp_connection(
-      _BQ_CONN_DEFAULT, project_id, key_path)
-  system_testing_utils.create_or_update_airflow_gcp_connection(
-      _GCD_CONN_DEFAULT, project_id, key_path)
+      _BQ_CONN_DEFAULT, project_id)
 
   execution_date = system_testing_utils.get_iso8601_date_str(
       datetime.datetime.now())

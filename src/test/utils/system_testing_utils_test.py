@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tcrm.utils.system_testing_utils."""
+"""Test for tcrm.utils.system_testing_utils."""
 
 import datetime
 import os
@@ -61,30 +61,30 @@ class SystemVerificationUtilsTest(unittest.TestCase):
 
   def test_create_or_update_airflow_gcp_connection(self):
     with unittest.mock.patch(
-        'plugins.pipeline_plugins.utils.system_testing_utils.'
-        'run_shell_cmd') as p:
+        'plugins.pipeline_plugins.utils.'
+        'system_testing_utils.run_shell_cmd') as p:
       system_testing_utils.create_or_update_airflow_gcp_connection(
-          'conn_id', 'project_id', 'key_path')
+          'conn_id', 'project_id')
       self.assertEqual(p.call_count, 2)
 
   def test_create_or_update_airflow_variable(self):
     with unittest.mock.patch(
-        'plugins.pipeline_plugins.utils.system_testing_utils.'
-        'run_shell_cmd') as p:
+        'plugins.pipeline_plugins.utils.'
+        'system_testing_utils.run_shell_cmd') as p:
       system_testing_utils.create_or_update_airflow_variable(
           'key', 'value')
       p.assert_called_once()
 
   def test_run_airflow_task(self):
     with unittest.mock.patch(
-        'plugins.pipeline_plugins.utils.system_testing_utils.'
-        'run_shell_cmd') as p:
+        'plugins.pipeline_plugins.utils.'
+        'system_testing_utils.run_shell_cmd') as p:
       system_testing_utils.run_airflow_task('dag_id', 'task_id',
                                             '2020-10-13T00:00:00+00:00')
       p.assert_called_once()
 
   def test_get_latest_task_log(self):
-    airflow_home = '.'
+    airflow_home = '/tmp'
     with unittest.mock.patch.dict('os.environ', {'AIRFLOW_HOME': airflow_home}):
       dag_id = 'tcrm_bq_to_ga'
       task_id = 'bq_to_ga_task'
@@ -125,3 +125,7 @@ class SystemVerificationUtilsTest(unittest.TestCase):
 
     with self.assertRaises(RuntimeError):
       system_testing_utils.insert_rows_to_table([], 'table_id')
+
+
+if __name__ == '__main__':
+  unittest.main()

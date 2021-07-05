@@ -13,17 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Config file for Running TCRM's Cloud Build CI
+# Config file for Running TCRM's Cloud Build CI.
 
 steps:
-# Get pre-stored service account JSON string from GCP Secret and decode from BASE64 encoding.
+- name: 'gcr.io/cloud-builders/git'
+  args:
+  - 'clone'
+  - 'https://github.com/google/gps_building_blocks.git'
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=system-test --format='get(payload.data)' | tr '_-' '/+' | base64 -d > src/key.json" ]
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', 'https://github.com/google/gps_building_blocks.git']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/tcrm:$COMMIT_SHA', '.']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['run', 'gcr.io/$PROJECT_ID/tcrm:$COMMIT_SHA', '/bin/bash', '-c',
-         "pytest -v --cov=. && export AIRFLOW_HOME=/root/tcrm/src && export TEST_TYPE=SYSTEM && export GOOGLE_APPLICATION_CREDENTIALS=/root/tcrm/src/key.json && airflow initdb && pytest -m systemtest test/system/*"]
+  args:
+  - '-c'
+  - |
+    mkdir -p src/gps_building_blocks/cloud/utils \
+    && cp -r gps_building_blocks/py/gps_building_blocks/cloud/utils/* src/gps_building_blocks/cloud/utils
+- name: python:3.7-buster
+  entrypoint: bash
+  args:
+  - '-c'
+  - |
+    pip install -r requirements.txt \
+    && pip install pytest \
+    && pip install requests_mock \
+    && pip install freezegun \
+    && pip install pytest-cov \
+    && pip install mock \
+    && cd src \
+    && export PYTHONPATH=.:./plugins \
+    && python -m pytest -v --cov=. \
+    && export AIRFLOW_HOME=. \
+    && export TEST_TYPE=SYSTEM \
+    && airflow initdb \
+    && pytest -m systemtest test/system/*

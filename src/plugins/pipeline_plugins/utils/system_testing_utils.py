@@ -45,9 +45,8 @@ def get_iso8601_date_str(datetime_obj):
   return dts
 
 
-def create_or_update_airflow_gcp_connection(conn_id, project_id, key_path):
-  extra = json.dumps({'extra__google_cloud_platform__project': project_id,
-                      'extra__google_cloud_platform__key_path': key_path
+def create_or_update_airflow_gcp_connection(conn_id, project_id):
+  extra = json.dumps({'extra__google_cloud_platform__project': project_id
                      }).replace('"', '\\"')
   run_shell_cmd(f'airflow connections -d --conn_id {conn_id};')
   run_shell_cmd(f'airflow connections -a --conn_id {conn_id}'
