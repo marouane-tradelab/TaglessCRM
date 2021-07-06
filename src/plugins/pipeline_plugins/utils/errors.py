@@ -88,9 +88,10 @@ _ERROR_ID_DESCRIPTION_MAP = frozendict.frozendict({
     94: 'Error in sending event to Google Analytics 4. non_personalized_ads should be bool.',
     95: 'Error in sending event to Google Analytics 4. user_id should be string.',
     96: 'Error in sending event to Google Analytics 4. user_properties contain invalid value.',
-    97: 'Error in sending event to Google Analytics 4. events contain invalid valu.',
+    97: 'Error in sending event to Google Analytics 4. events contain invalid value.',
     98: 'Error in sending event to Google Analytics 4. event params contain invalid value.',
     99: 'Error in sending event to Google Analytics 4. event params items contain invalid value.',
+    100: 'Error in sending event to Google Analytics 4. payload is missing in event.',
 })
 
 
@@ -164,6 +165,7 @@ class ErrorNameIDMap(enum.Enum):
   GA4_HOOK_ERROR_VALUE_INVALID_EVENTS = 97
   GA4_HOOK_ERROR_VALUE_INVALID_EVENTS_PARAMS = 98
   GA4_HOOK_ERROR_VALUE_INVALID_EVENTS_PARAMS_ITEMS = 99
+  GA4_HOOK_ERROR_MISSING_PAYLOAD_IN_EVENT = 100
 
 
 class Error(Exception):

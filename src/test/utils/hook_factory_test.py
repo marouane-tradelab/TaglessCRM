@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tcrm.utils.retry_utils."""
+"""Test for tcrm.utils.hook_factory."""
 
 import unittest
 from unittest import mock
@@ -33,6 +33,7 @@ _HOOKS_KWARGS = {'ads_credentials': 'ads_credentials',
                  'ads_cm_membership_lifespan': 8,
                  'ads_cm_user_list_name': 'my_list',
                  'ads_uac_conn_id': 'conn_id',
+                 'api_secret': 'api_secret',
                  'bq_conn_id': 'conn_id',
                  'bq_dataset_id': 'dataset',
                  'bq_table_id': 'table',
@@ -43,7 +44,10 @@ _HOOKS_KWARGS = {'ads_credentials': 'ads_credentials',
                  'ga_base_params': 'ga_base_params',
                  'gcs_bucket': 'bucket',
                  'gcs_content_type': 'JSON',
-                 'gcs_prefix': 'prefix'}
+                 'gcs_prefix': 'prefix',
+                 'payload_type': 'gtag',
+                 'measurement_id': 'measurement_id',
+                 'firebase_app_id': 'firebase_app_id'}
 
 
 def parameterize_function_name(testcase_func, unused_param_num, param):

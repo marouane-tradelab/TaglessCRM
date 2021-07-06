@@ -41,6 +41,7 @@ from plugins.pipeline_plugins.hooks import ads_oc_hook
 from plugins.pipeline_plugins.hooks import ads_uac_hook
 from plugins.pipeline_plugins.hooks import bq_hook
 from plugins.pipeline_plugins.hooks import cm_hook
+from plugins.pipeline_plugins.hooks import ga4_hook
 from plugins.pipeline_plugins.hooks import ga_hook
 from plugins.pipeline_plugins.hooks import gcs_hook
 from plugins.pipeline_plugins.hooks import input_hook_interface
@@ -57,6 +58,7 @@ class OutputHookType(enum.Enum):
   GOOGLE_ADS_OFFLINE_CONVERSIONS = ads_oc_hook.GoogleAdsOfflineConversionsHook
   GOOGLE_ADS_UNIVERSAL_APP_CAMPAIGN = ads_uac_hook.AdsUniversalAppCampaignHook
   GOOGLE_ANALYTICS = ga_hook.GoogleAnalyticsHook
+  GOOGLE_ANALYTICS_4 = ga4_hook.GoogleAnalyticsV4Hook
   GOOGLE_CAMPAIGN_MANAGER_OFFLINE_CONVERSIONS = cm_hook.CampaignManagerHook
 
 

@@ -210,6 +210,49 @@ class GoogleAnalyticsV4HookTest(unittest.TestCase):
       self.assertEqual(len(blb.events), 1)
       self.assertEqual(len(blb.failed_events), 0)
 
+  def test_ga4_hook_parse_validate_result_failed_with_500(self):
+    blb = blob.Blob(events=[self.test_event], location='')
+
+    with mock.patch('requests.post') as mock_resp:
+      mock_resp.return_value = mock.MagicMock()
+      mock_resp.return_value.status_code = 500
+
+      blb = self.test_gtag_hook.send_events(blb)
+      self.assertEqual(len(blb.failed_events), 1)
+      self.assertEqual(
+          blb.failed_events[0][2],
+          errors.ErrorNameIDMap.RETRIABLE_GA4_HOOK_ERROR_HTTP_ERROR.value)
+
+  def test_ga4_hook_parse_validate_result_failed_with_4xx(self):
+    blb = blob.Blob(events=[self.test_event], location='')
+
+    with mock.patch('requests.post') as mock_resp:
+      mock_resp.return_value = mock.MagicMock()
+      mock_resp.return_value.status_code = 404
+
+      blb = self.test_gtag_hook.send_events(blb)
+      self.assertEqual(len(blb.failed_events), 1)
+      self.assertEqual(
+          blb.failed_events[0][2],
+          errors.ErrorNameIDMap.NON_RETRIABLE_ERROR_EVENT_NOT_SENT.value)
+
+  def test_ga4_hook_send_event_failed_with_4xx(self):
+    blb = blob.Blob(events=[self.test_event], location='')
+
+    mock_validate_resp = mock.MagicMock()
+    mock_validate_resp.status_code = 200
+    mock_validate_resp.json.return_value = {'validationMessages': []}
+    mock_post_resp = mock.MagicMock()
+    mock_post_resp.status_code = 400
+
+    with mock.patch('requests.post', side_effect=[mock_validate_resp,
+                                                  mock_post_resp]):
+      blb = self.test_gtag_hook.send_events(blb)
+      self.assertEqual(len(blb.failed_events), 1)
+      self.assertEqual(
+          blb.failed_events[0][2],
+          errors.ErrorNameIDMap.RETRIABLE_GA_HOOK_ERROR_HTTP_ERROR.value)
+
 
 if __name__ == '__main__':
   unittest.main()
