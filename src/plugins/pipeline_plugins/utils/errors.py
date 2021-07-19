@@ -22,11 +22,11 @@ All exceptions defined by the library should be in this file.
 """
 import enum
 from typing import Optional
-import frozendict
+import immutabledict
 
 # A dictionary with error numbers and error descriptions to use for consistent
 # logging and error handling across TCRM.
-_ERROR_ID_DESCRIPTION_MAP = frozendict.frozendict({
+_ERROR_ID_DESCRIPTION_MAP = immutabledict.immutabledict({
     10: 'General error occurred.',
     11: 'Event not sent due to authentication error. Event is due for retry.',
     12: 'Event not sent. Event is due for retry.',

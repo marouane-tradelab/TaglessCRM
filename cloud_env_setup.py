@@ -45,7 +45,7 @@ _APIS_TO_BE_ENABLED = [
 _COMPOSER_PYPI_PACKAGES = {
     'dataclasses': '',
     'googleads': '',
-    'frozendict': '',
+    'immutabledict': '',
 }
 # Composer environment variables.
 _COMPOSER_ENV_VARIABLES = {
