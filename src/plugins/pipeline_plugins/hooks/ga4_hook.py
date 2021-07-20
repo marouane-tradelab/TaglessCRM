@@ -91,25 +91,25 @@ class GoogleAnalyticsV4Hook(output_hook_interface.OutputHookInterface):
         criteria.
     """
     if not self.api_secret:
-      raise errors.DataOutConnectorAuthenticationError(
+      raise errors.DataOutConnectorValueError(
           'Missing api secret. Please check you have api_secret set as a Cloud '
           'Composer variable as specified in the TCRM documentation.')
 
     valid_payload_types = (PayloadTypes.FIREBASE.value, PayloadTypes.GTAG.value)
     if self.payload_type not in valid_payload_types:
-      raise errors.DataOutConnectorError(
+      raise errors.DataOutConnectorValueError(
           f'Unsupport payload_type: {self.payload_type}. Supported '
           'payload_type is gtag or firebase.')
 
     if (self.payload_type == PayloadTypes.FIREBASE.value and
         not self.firebase_app_id):
-      raise errors.DataOutConnectorError(
+      raise errors.DataOutConnectorValueError(
           'Wrong payload_type or missing firebase_app_id. Please make sure '
           'firebase_app_id is set when payload_type is firebase.')
 
     if (self.payload_type == PayloadTypes.GTAG.value and
         not self.measurement_id):
-      raise errors.DataOutConnectorError(
+      raise errors.DataOutConnectorValueError(
           'Wrong payload_type or missing measurement_id. Please make sure '
           'measurement_id is set when payload_type is gtag.')
 
