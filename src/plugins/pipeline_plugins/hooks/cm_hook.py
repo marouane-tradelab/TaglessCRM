@@ -168,7 +168,7 @@ class CampaignManagerHook(output_hook_interface.OutputHookInterface):
       raise ValueError('Empty profile_id arg not allowed!')
 
     self._cm_service = cloud_auth.build_impersonated_client(
-        _API_SERVICE, cm_service_account, _API_VERSION, _API_SCOPE)
+        _API_SERVICE, cm_service_account, _API_VERSION, _API_SCOPE)  # pytype: disable=wrong-arg-types
     self._profile_id = cm_profile_id
 
   def _validate_and_prepare_events_to_send(
