@@ -70,10 +70,11 @@ cd tcrm && sh setup.sh --project_id=$GOOGLE_CLOUD_PROJECT
 
    <img src="./images/tcrm_install_8.png" align="center" width="85%">
 
-NOTE: This command will do the following 3 steps: 1. Create a Python virtual
-environment, and install all the required Python packages. 2. Enable the
-required Cloud APIs in the GCP project. 3. Create a Cloud Composer environment,
-and deploy the TCRM DAGs into it.
+NOTE: This command will do the following 3 steps:
+
+1. Create a Python virtual environment, and install all the required Python packages.
+2. Enable the required Cloud APIs in the GCP project.
+3. Create a Cloud Composer environment, and deploy the TCRM DAGs into it.
 
 NOTE: The installation should take about 2 hours. Please wait until the
 script finishes running.
@@ -147,8 +148,8 @@ Those variables have default values already automatically set up for you so
 can change these variables, however, at any time by setting an Airflow variable
 with the same `Variable Name` to another value.
 
-To allow for different DAGs to have different configurations some varriables'
-names will contain the DAG name as a prefix. Pleease be sure you replace the
+To allow different DAGs to have different configurations, some variable
+names will contain the DAG name as a prefix. Please be sure you replace the
 `<DAG Name>` part and use the right DAG name.
 
 For example: to set the schedule variable for `tcrm_gcs_to_ga` DAG, take the
@@ -282,8 +283,8 @@ that contains the campaign for TCRM to automate.
 
 <img src="./images/tcrm_install_26.png" align="center" width="85%">
 
-client_id and client_secret can be created in the APIs & Services page in GCP
-console.
+client_id and client_secret can be created in the APIs & Services page in the
+GCP console.
 
 <img src="./images/tcrm_install_27.png" align="center" width="65%">
 
@@ -348,12 +349,6 @@ cid,t,ec,ea,el,ev
 12345.67892,event,video,play,holiday,302
 12345.67893,event,video,play,holiday,303
 ```
-
-WARNING: To make sure GA will accept the data sent from TCRM you need to
-configure GA's bot filtering. To do this, go to `Admin -> View Settings -> Bot
-Filtering` in your
-[Google Analytics UI](https://analytics.google.com/analytics)
-and **uncheck** “Exclude all hits from known bots and spiders”.
 
 #### 4.2 Prepare Data for Google Ads Offline Conversion
 
