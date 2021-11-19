@@ -105,7 +105,7 @@ class BigQueryToAdsCMDag(base_dag.BaseDag):
             'ads_cm_membership_lifespan', _ADS_MEMBERSHIP_LIFESPAN_DAYS),
         ads_cm_user_list_name=variable.Variable.get('ads_cm_user_list_name',
                                                     ''),
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):

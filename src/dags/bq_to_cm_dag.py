@@ -83,7 +83,7 @@ class BigQueryToCMDag(base_dag.BaseDag):
         bq_table_id=variable.Variable.get('bq_table_id', ''),
         cm_service_account=variable.Variable.get('cm_service_account', ''),
         cm_profile_id=variable.Variable.get('cm_profile_id', ''),
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):

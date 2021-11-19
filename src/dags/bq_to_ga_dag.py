@@ -85,7 +85,7 @@ class BigQueryToGADag(base_dag.BaseDag):
         bq_table_id=variable.Variable.get('bq_table_id', ''),
         ga_tracking_id=variable.Variable.get('ga_tracking_id', ''),
         ga_base_params=_GA_BASE_PARAMS,
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):

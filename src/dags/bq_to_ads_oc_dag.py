@@ -83,7 +83,7 @@ class BigQueryToAdsOCDag(base_dag.BaseDag):
         bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
         bq_table_id=variable.Variable.get('bq_table_id', ''),
         ads_credentials=variable.Variable.get('ads_credentials', ''),
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):

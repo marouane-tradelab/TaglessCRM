@@ -87,7 +87,7 @@ class BigQueryToGA4Dag(base_dag.BaseDag):
         payload_type=variable.Variable.get('payload_type', ''),
         measurement_id=variable.Variable.get('measurement_id', ''),
         firebase_app_id=variable.Variable.get('firebase_app_id', ''),
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):

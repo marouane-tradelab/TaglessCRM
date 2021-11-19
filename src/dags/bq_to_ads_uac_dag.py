@@ -81,7 +81,7 @@ class BigQueryToAdsUACDag(base_dag.BaseDag):
         bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
         bq_table_id=variable.Variable.get('bq_table_id', ''),
         ads_uac_conn_id=_ADS_UNIVERSAL_APP_CAMPAIGN_CONN_ID,
-        dag=main_dag)
+        dag=main_dag)  # pytype: disable=wrong-arg-types
 
 
 if os.getenv(_AIRFLOW_ENV):
