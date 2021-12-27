@@ -35,7 +35,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -81,12 +80,12 @@ class BigQueryToGA4Dag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
-        bq_table_id=variable.Variable.get('bq_table_id', ''),
-        api_secret=variable.Variable.get('api_secret', ''),
-        payload_type=variable.Variable.get('payload_type', ''),
-        measurement_id=variable.Variable.get('measurement_id', ''),
-        firebase_app_id=variable.Variable.get('firebase_app_id', ''),
+        bq_dataset_id=self.get_variable_value(_DAG_NAME, 'bq_dataset_id'),
+        bq_table_id=self.get_variable_value(_DAG_NAME, 'bq_table_id'),
+        api_secret=self.get_variable_value(_DAG_NAME, 'api_secret'),
+        payload_type=self.get_variable_value(_DAG_NAME, 'payload_type'),
+        measurement_id=self.get_variable_value(_DAG_NAME, 'measurement_id'),
+        firebase_app_id=self.get_variable_value(_DAG_NAME, 'firebase_app_id'),
         dag=main_dag)  # pytype: disable=wrong-arg-types
 
 

@@ -32,7 +32,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -79,10 +78,11 @@ class BigQueryToCMDag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
-        bq_table_id=variable.Variable.get('bq_table_id', ''),
-        cm_service_account=variable.Variable.get('cm_service_account', ''),
-        cm_profile_id=variable.Variable.get('cm_profile_id', ''),
+        bq_dataset_id=self.get_variable_value(_DAG_NAME, 'bq_dataset_id'),
+        bq_table_id=self.get_variable_value(_DAG_NAME, 'bq_table_id'),
+        cm_service_account=self.get_variable_value(_DAG_NAME,
+                                                   'cm_service_account'),
+        cm_profile_id=self.get_variable_value(_DAG_NAME, 'cm_profile_id'),
         dag=main_dag)  # pytype: disable=wrong-arg-types
 
 

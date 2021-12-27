@@ -36,7 +36,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -79,11 +78,14 @@ class GCSToAdsOCDag(base_dag.BaseDag):
         monitoring_dataset=self.monitoring_dataset,
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
-        gcs_bucket=variable.Variable.get('gcs_bucket_name', ''),
-        gcs_content_type=variable.Variable.get('gcs_content_type',
-                                               _GCS_CONTENT_TYPE).upper(),
-        gcs_prefix=variable.Variable.get('gcs_bucket_prefix', ''),
-        ads_credentials=variable.Variable.get('ads_credentials', ''),
+        gcs_bucket=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_name', fallback_value=''),
+        gcs_content_type=self.get_variable_value(
+            _DAG_NAME, 'gcs_content_type',
+            fallback_value=_GCS_CONTENT_TYPE).upper(),
+        gcs_prefix=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_prefix', fallback_value=''),
+        ads_credentials=self.get_variable_value(_DAG_NAME, 'ads_credentials'),
         dag=main_dag)
 
 

@@ -34,7 +34,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -80,9 +79,9 @@ class BigQueryToAdsOCDag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
-        bq_table_id=variable.Variable.get('bq_table_id', ''),
-        ads_credentials=variable.Variable.get('ads_credentials', ''),
+        bq_dataset_id=self.get_variable_value(_DAG_NAME, 'bq_dataset_id'),
+        bq_table_id=self.get_variable_value(_DAG_NAME, 'bq_table_id'),
+        ads_credentials=self.get_variable_value(_DAG_NAME, 'ads_credentials'),
         dag=main_dag)  # pytype: disable=wrong-arg-types
 
 

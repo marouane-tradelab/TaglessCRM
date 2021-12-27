@@ -30,7 +30,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -81,9 +80,10 @@ class BigQueryToGADag(base_dag.BaseDag):
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
         bq_conn_id=_BQ_CONN_ID,
-        bq_dataset_id=variable.Variable.get('bq_dataset_id', ''),
-        bq_table_id=variable.Variable.get('bq_table_id', ''),
-        ga_tracking_id=variable.Variable.get('ga_tracking_id', ''),
+        bq_dataset_id=self.get_variable_value(_DAG_NAME, 'bq_dataset_id'),
+        bq_table_id=self.get_variable_value(_DAG_NAME, 'bq_table_id'),
+        ga_tracking_id=self.get_variable_value(
+            _DAG_NAME, 'ga_tracking_id', fallback_value=''),
         ga_base_params=_GA_BASE_PARAMS,
         dag=main_dag)  # pytype: disable=wrong-arg-types
 

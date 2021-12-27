@@ -18,75 +18,35 @@
 
 import unittest
 
-from airflow.contrib.hooks import bigquery_hook
-from airflow.models import baseoperator
-from airflow.models import dag
-from airflow.models import variable
-import mock
-
 from dags import bq_to_ga_dag
-from plugins.pipeline_plugins.hooks import monitoring_hook
-
-_DAG_NAME = bq_to_ga_dag._DAG_NAME
-
-AIRFLOW_VARIABLES = {
-    'dag_name': _DAG_NAME,
-    f'{_DAG_NAME}_schedule': '@once',
-    f'{_DAG_NAME}_retries': 0,
-    f'{_DAG_NAME}_retry_delay': 3,
-    f'{_DAG_NAME}_is_retry': True,
-    f'{_DAG_NAME}_is_run': True,
-    f'{_DAG_NAME}_enable_run_report': False,
-    f'{_DAG_NAME}_enable_monitoring': True,
-    f'{_DAG_NAME}_enable_monitoring_cleanup': False,
-    'monitoring_data_days_to_live': 50,
-    'monitoring_dataset': 'test_monitoring_dataset',
-    'monitoring_table': 'test_monitoring_table',
-    'monitoring_bq_conn_id': 'test_monitoring_conn',
-    'bq_conn_id': 'test_connection',
-    'bq_dataset_id': 'test_dataset',
-    'bq_table_id': 'test_table',
-    'bq_selected_fields': ['f1'],
-    'ga_tracking_id': 'UA-12345-67'
-}
+import dag_test
 
 
-class DAGTest(unittest.TestCase):
+class DAGTest(dag_test.DAGTest):
 
   def setUp(self):
     super(DAGTest, self).setUp()
-    self.addCleanup(mock.patch.stopall)
-    self.mock_variable = mock.patch.object(
-        variable, 'Variable', autospec=True).start()
-    # `side_effect` is assigned to `lambda` to dynamically return values
-    # each time when self.mock_variable is called.
-    self.mock_variable.get.side_effect = (
-        lambda key, value: AIRFLOW_VARIABLES[key])
-
-    self.original_bigquery_hook_init = bigquery_hook.BigQueryHook.__init__
-    bigquery_hook.BigQueryHook.__init__ = mock.MagicMock()
-
-    self.original_monitoring_hook = monitoring_hook.MonitoringHook
-    monitoring_hook.MonitoringHook = mock.MagicMock()
-
-  def tearDown(self):
-    super().tearDown()
-    bigquery_hook.BigQueryHook.__init__ = self.original_bigquery_hook_init
-    monitoring_hook.MonitoringHook = self.original_monitoring_hook
+    self.init_airflow_variables(bq_to_ga_dag._DAG_NAME)
 
   def test_create_dag(self):
     """Tests that returned DAG contains correct DAG and tasks."""
     expected_task_ids = ['bq_to_ga_retry_task', 'bq_to_ga_task']
 
+    is_var_prefixed = False
     test_dag = bq_to_ga_dag.BigQueryToGADag(
-        AIRFLOW_VARIABLES['dag_name']).create_dag()
+        self.airflow_variables['dag_name']).create_dag()
+    self.verify_created_tasks(test_dag, expected_task_ids)
+    self.verify_bq_hook(test_dag.tasks[1].input_hook, is_var_prefixed)
+    self.verify_ga_hook(test_dag.tasks[1].output_hook, is_var_prefixed)
 
-    self.assertIsInstance(test_dag, dag.DAG)
-    self.assertEqual(len(test_dag.tasks), len(expected_task_ids))
-    for task in test_dag.tasks:
-      self.assertIsInstance(task, baseoperator.BaseOperator)
-    actual_task_ids = [t.task_id for t in test_dag.tasks]
-    self.assertListEqual(actual_task_ids, expected_task_ids)
+    self.add_prefixed_airflow_variables()
+    is_var_prefixed = True
+
+    test_dag = bq_to_ga_dag.BigQueryToGADag(
+        self.airflow_variables['dag_name']).create_dag()
+    self.verify_created_tasks(test_dag, expected_task_ids)
+    self.verify_bq_hook(test_dag.tasks[1].input_hook, is_var_prefixed)
+    self.verify_ga_hook(test_dag.tasks[1].output_hook, is_var_prefixed)
 
 
 if __name__ == '__main__':

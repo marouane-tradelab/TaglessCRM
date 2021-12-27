@@ -35,7 +35,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -78,14 +77,17 @@ class GCSToGA4Dag(base_dag.BaseDag):
         monitoring_dataset=self.monitoring_dataset,
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
-        gcs_bucket=variable.Variable.get('gcs_bucket_name', ''),
-        gcs_prefix=variable.Variable.get('gcs_bucket_prefix', ''),
-        gcs_content_type=variable.Variable.get('gcs_content_type',
-                                               _GCS_CONTENT_TYPE).upper(),
-        api_secret=variable.Variable.get('api_secret', ''),
-        payload_type=variable.Variable.get('payload_type', ''),
-        measurement_id=variable.Variable.get('measurement_id', ''),
-        firebase_app_id=variable.Variable.get('firebase_app_id', ''),
+        gcs_bucket=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_name', fallback_value=''),
+        gcs_content_type=self.get_variable_value(
+            _DAG_NAME, 'gcs_content_type',
+            fallback_value=_GCS_CONTENT_TYPE).upper(),
+        gcs_prefix=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_prefix', fallback_value=''),
+        api_secret=self.get_variable_value(_DAG_NAME, 'api_secret'),
+        payload_type=self.get_variable_value(_DAG_NAME, 'payload_type'),
+        measurement_id=self.get_variable_value(_DAG_NAME, 'measurement_id'),
+        firebase_app_id=self.get_variable_value(_DAG_NAME, 'firebase_app_id'),
         dag=main_dag)
 
 

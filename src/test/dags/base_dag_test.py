@@ -46,17 +46,44 @@ class BaseDagTest(unittest.TestCase):
     super().setUp()
     self.dag_name = 'test_dag'
 
+    self.airflow_variables = {
+        'monitoring_data_days_to_live': '50',
+        'dag_name': self.dag_name,
+        f'{self.dag_name}_schedule': '@once',
+        f'{self.dag_name}_retries': '0',
+        f'{self.dag_name}_retry_delay': '3',
+        f'{self.dag_name}_is_retry': '1',
+        f'{self.dag_name}_is_run': '1',
+        f'{self.dag_name}_enable_run_report': '0',
+        f'{self.dag_name}_enable_monitoring': '1',
+        f'{self.dag_name}_enable_monitoring_cleanup': '1',
+        'monitoring_dataset': 'test_monitoring_dataset',
+        'monitoring_table': 'test_monitoring_table',
+        'monitoring_bq_conn_id': 'test_monitoring_conn',
+        'bq_conn_id': 'test_connection',
+        'bq_dataset_id': 'test_dataset',
+        'bq_table_id': 'test_table',
+        'bq_selected_fields': ['f1'],
+        'ga_tracking_id': 'UA-12345-67'
+    }
+
     self.addCleanup(mock.patch.stopall)
     self.mock_variable = mock.patch.object(
         variable, 'Variable', autospec=True).start()
 
-    def mock_get(_, fallback=None):
-      return fallback
-    self.mock_variable.get.side_effect = mock_get
+    def mock_variable_get(key, default_var):
+      if key in self.airflow_variables:
+        return self.airflow_variables[key]
+      else:
+        return default_var
+    self.mock_variable.get.side_effect = mock_variable_get
+
     self.dag = FakeDag(self.dag_name)
 
   def test_init(self):
     fake_dag = FakeDag(self.dag_name)
+    fake_dag.create_task = mock.MagicMock()
+    fake_dag._create_cleanup_task = mock.MagicMock()
 
     test_dag = fake_dag.create_dag()
 
@@ -68,6 +95,7 @@ class BaseDagTest(unittest.TestCase):
 
   def test_create_dag_successfully(self):
     self.dag.create_task = mock.MagicMock()
+    self.dag._create_cleanup_task = mock.MagicMock()
 
     self.dag.create_dag()
 
@@ -84,33 +112,39 @@ class BaseDagTest(unittest.TestCase):
   @mock.patch.object(base_dag.BaseDag, '_create_cleanup_task')
   def test_cleanup_task_called_when_dag_enable_monitoring_cleanup_true(
       self, mock_cleanup_task):
-    airflow_variables = {
-        'monitoring_data_days_to_live': 50,
-        'dag_name': self.dag_name,
-        f'{self.dag_name}_schedule': '@once',
-        f'{self.dag_name}_retries': 0,
-        f'{self.dag_name}_retry_delay': 3,
-        f'{self.dag_name}_is_retry': True,
-        f'{self.dag_name}_is_run': True,
-        f'{self.dag_name}_enable_run_report': False,
-        f'{self.dag_name}_enable_monitoring': True,
-        f'{self.dag_name}_enable_monitoring_cleanup': True,
-        'monitoring_dataset': 'test_monitoring_dataset',
-        'monitoring_table': 'test_monitoring_table',
-        'monitoring_bq_conn_id': 'test_monitoring_conn',
-        'bq_conn_id': 'test_connection',
-        'bq_dataset_id': 'test_dataset',
-        'bq_table_id': 'test_table',
-        'bq_selected_fields': ['f1'],
-        'ga_tracking_id': 'UA-12345-67'
-    }
+
     self.mock_variable.get.side_effect = (
-        lambda key, value: airflow_variables[key])
+        lambda key, value: self.airflow_variables[key])
 
     fake_dag = FakeDag(self.dag_name)
     fake_dag.create_dag()
 
     mock_cleanup_task.assert_called_once()
+
+  def test_get_variable_value_with_prefix(self):
+    expected_val = 'prefix_test_table'
+    self.airflow_variables[f'{self.dag_name}_bq_table_id'] = expected_val
+    actual_val = self.dag.get_variable_value(self.dag_name, 'bq_table_id')
+    self.assertEqual(actual_val, expected_val)
+
+  def test_get_variable_value_without_prefix(self):
+    actual_val = self.dag.get_variable_value(self.dag_name, 'bq_table_id')
+    self.assertEqual(actual_val, 'test_table')
+
+  def test_get_variable_value_return_fallback(self):
+    actual_val = self.dag.get_variable_value(self.dag_name, 'fake_key',
+                                             fallback_value='fallback')
+    self.assertEqual(actual_val, 'fallback')
+
+  def test_get_variable_value_fallback_type_mismatch(self):
+    with self.assertRaises(TypeError):
+      self.dag.get_variable_value(
+          self.dag_name, 'retry_delay', int, fallback_value='5')
+
+  def test_get_variable_value_of_specified_type(self):
+    actual_val = self.dag.get_variable_value(
+        self.dag_name, 'retry_delay', int, fallback_value=5)
+    self.assertEqual(actual_val, 3)
 
 if __name__ == '__main__':
   unittest.main()

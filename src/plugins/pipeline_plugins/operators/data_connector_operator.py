@@ -75,7 +75,8 @@ class DataConnectorOperator(models.BaseOperator):
 
     self.monitor = monitoring.MonitoringHook(
         bq_conn_id=monitoring_bq_conn_id,
-        enable_monitoring=enable_monitoring, dag_name=dag_name,
+        enable_monitoring=enable_monitoring,
+        dag_name=dag_name,
         monitoring_dataset=monitoring_dataset,
         monitoring_table=monitoring_table,
         location=self.input_hook.get_location())

@@ -41,12 +41,12 @@ _DAG_SCHEDULE = '@once'
 _ENABLE_RETURN_REPORT = False
 
 # Whether or not the DAG should use the monitoring storage for logging.
-# Enablee monitoring to enable retry and reporting later.
+# Enable monitoring to enable retry and reporting later.
 _DAG_ENABLE_MONITORING = True
 _DEFAULT_MONITORING_DATASET_ID = 'tcrm_monitoring_dataset'
 _DEFAULT_MONITORING_TABLE_ID = 'tcrm_monitoring_table'
 
-# Whether or not the cleanup opeartor should run automatically after a DAG
+# Whether or not the cleanup operator should run automatically after a DAG
 # completes.
 _DEFAULT_DAG_ENABLE_MONITORING_CLEANUP = False
 # Number of days data can live in the monitoring table before being removed.
@@ -87,7 +87,7 @@ def create_error_report_task(
     error: The error to display.
 
   Returns:
-    An ErrorReportOperator instace task.
+    An ErrorReportOperator instance task.
   """
   return error_report_operator.ErrorReportOperator(
       task_id='configuration_error',
@@ -104,16 +104,16 @@ class BaseDag(abc.ABC):
     dag_retry_delay: The interval between Airflow DAG retries.
     dag_schedule: The schedule for the dag.
     dag_is_retry: Whether or not the DAG should include a retry task. This is
-                  an internal retry to send faild events from previous
+                  an internal retry to send failed events from previous
                   similar runs. It is different from the Airflow retry of the
                   whole DAG.
-    dag_is_run: Whether or not the DAG should includ a main run.
+    dag_is_run: Whether or not the DAG should include a main run.
     dag_enable_run_report: Indicates whether the tasks will return a run report
                            or not.
     dag_enable_monitoring: Whether or not the DAG should use the monitoring
                            storage for logging. Enable monitoring to enable
                            retry and reporting later.
-    dag_enable_monitoring_cleanup: Whether or not the cleanup opeartor should
+    dag_enable_monitoring_cleanup: Whether or not the cleanup operator should
                                    run automatically after a DAG completes.
     days_to_live: Number of days data can live in the monitoring table before
                   being removed.
@@ -185,6 +185,7 @@ class BaseDag(abc.ABC):
     return dag.DAG(
         dag_id=self.dag_name,
         schedule_interval=self.dag_schedule,
+        catchup=False,
         default_args=default_args)
 
   @abc.abstractmethod
@@ -287,3 +288,36 @@ class BaseDag(abc.ABC):
       return task_name + '_retry_task'
     else:
       return task_name + '_task'
+
+  def get_variable_value(self,
+                         prefix: str,
+                         variable_name: str,
+                         expected_type: Any = str,
+                         fallback_value: object = '',
+                         var_not_found_flag: Any = None) -> Any:
+    """Try to get value by the prefixed name first, then the name directly.
+
+    Args:
+      prefix: The prefix of the variable.
+      variable_name: The name of the variable.
+      expected_type: The expected type of the value, can be str, int and bool.
+      fallback_value: The default value if no such variable is found.
+      var_not_found_flag: The flag that indicates no value is found by prefixed
+        variable_name and should try to retrieve value by variable_name only.
+    Returns:
+      The value of expected type of the corresponding variable.
+    """
+    if fallback_value is not None:
+      if not isinstance(fallback_value, expected_type):
+        raise TypeError(
+            f'type of fallback mismatch expected type {expected_type}')
+
+    val = variable.Variable.get(
+        f'{prefix}_{variable_name}', var_not_found_flag)
+    if val == var_not_found_flag:
+      val = variable.Variable.get(f'{variable_name}', fallback_value)
+
+    try:
+      return expected_type(val)
+    except ValueError:
+      return fallback_value

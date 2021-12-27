@@ -18,85 +18,35 @@
 
 import unittest
 
-from airflow.contrib.hooks import bigquery_hook
-from airflow.contrib.hooks import gcp_api_base_hook
-from airflow.models import baseoperator
-from airflow.models import dag
-from airflow.models import variable
-import mock
-
-from gps_building_blocks.cloud.utils import cloud_auth
+import dag_test
 from dags import gcs_to_cm_dag
-from plugins.pipeline_plugins.hooks import monitoring_hook
-
-_DAG_NAME = gcs_to_cm_dag._DAG_NAME
-
-AIRFLOW_VARIABLES = {
-    'dag_name': _DAG_NAME,
-    f'{_DAG_NAME}_schedule': '@once',
-    f'{_DAG_NAME}_retries': 0,
-    f'{_DAG_NAME}_retry_delay': 3,
-    f'{_DAG_NAME}_is_retry': True,
-    f'{_DAG_NAME}_is_run': True,
-    f'{_DAG_NAME}_enable_run_report': False,
-    f'{_DAG_NAME}_enable_monitoring': True,
-    f'{_DAG_NAME}_enable_monitoring_cleanup': False,
-    'monitoring_data_days_to_live': 50,
-    'monitoring_dataset': 'test_monitoring_dataset',
-    'monitoring_table': 'test_monitoring_table',
-    'monitoring_bq_conn_id': 'test_monitoring_conn',
-    'gcs_bucket_name': 'test_bucket',
-    'gcs_bucket_prefix': 'test_dataset',
-    'gcs_content_type': 'JSON',
-    'cm_service_account': 'service_account',
-    'cm_profile_id': 'cm_profile_id'
-}
 
 
-class GCSToCMDAGTest(unittest.TestCase):
+class GCSToCMDAGTest(dag_test.DAGTest):
 
   def setUp(self):
     super(GCSToCMDAGTest, self).setUp()
-    self.addCleanup(mock.patch.stopall)
-    self.build_impersonated_client_mock = mock.patch.object(
-        cloud_auth, 'build_impersonated_client', autospec=True)
-    self.build_impersonated_client_mock.return_value = mock.Mock()
-    self.build_impersonated_client_mock.start()
-    self.mock_variable = mock.patch.object(
-        variable, 'Variable', autospec=True).start()
-    # `side_effect` is assigned to `lambda` to dynamically return values
-    # each time when self.mock_variable is called.
-    self.mock_variable.get.side_effect = (
-        lambda key, value: AIRFLOW_VARIABLES[key])
-
-    self.original_gcp_hook_init = gcp_api_base_hook.GoogleCloudBaseHook.__init__
-    gcp_api_base_hook.GoogleCloudBaseHook.__init__ = mock.MagicMock()
-
-    self.original_bigquery_hook_init = bigquery_hook.BigQueryHook.__init__
-    bigquery_hook.BigQueryHook.__init__ = mock.MagicMock()
-
-    self.original_monitoring_hook = monitoring_hook.MonitoringHook
-    monitoring_hook.MonitoringHook = mock.MagicMock()
-
-  def tearDown(self):
-    super().tearDown()
-    gcp_api_base_hook.GoogleCloudBaseHook.__init__ = self.original_gcp_hook_init
-    bigquery_hook.BigQueryHook.__init__ = self.original_bigquery_hook_init
-    monitoring_hook.MonitoringHook = self.original_monitoring_hook
+    self.init_airflow_variables(gcs_to_cm_dag._DAG_NAME)
 
   def test_create_dag(self):
     """Tests that returned DAG contains correct DAG and tasks."""
     expected_task_ids = ['gcs_to_cm_retry_task', 'gcs_to_cm_task']
 
+    is_var_prefixed = False
     test_dag = gcs_to_cm_dag.GCSToCMDag(
-        AIRFLOW_VARIABLES['dag_name']).create_dag()
+        self.airflow_variables['dag_name']).create_dag()
+    self.verify_created_tasks(test_dag, expected_task_ids)
+    self.verify_gcs_hook(test_dag.tasks[1].input_hook, is_var_prefixed)
+    self.verify_cm_hook(test_dag.tasks[1].output_hook, is_var_prefixed)
 
-    self.assertIsInstance(test_dag, dag.DAG)
-    self.assertEqual(len(test_dag.tasks), len(expected_task_ids))
-    for task in test_dag.tasks:
-      self.assertIsInstance(task, baseoperator.BaseOperator)
-    actual_task_ids = [t.task_id for t in test_dag.tasks]
-    self.assertListEqual(actual_task_ids, expected_task_ids)
+    self.add_prefixed_airflow_variables()
+    is_var_prefixed = True
+
+    test_dag = gcs_to_cm_dag.GCSToCMDag(
+        self.airflow_variables['dag_name']).create_dag()
+    self.verify_created_tasks(test_dag, expected_task_ids)
+    self.verify_gcs_hook(test_dag.tasks[1].input_hook, is_var_prefixed)
+    self.verify_cm_hook(test_dag.tasks[1].output_hook, is_var_prefixed)
 
 
 if __name__ == '__main__':

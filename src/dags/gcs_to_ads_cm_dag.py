@@ -44,7 +44,6 @@ import os
 from typing import Optional
 
 from airflow.models import dag
-from airflow.models import variable
 
 from dags import base_dag
 from plugins.pipeline_plugins.operators import data_connector_operator
@@ -92,18 +91,30 @@ class GCSToAdsCMDag(base_dag.BaseDag):
         monitoring_dataset=self.monitoring_dataset,
         monitoring_table=self.monitoring_table,
         monitoring_bq_conn_id=self.monitoring_bq_conn_id,
-        gcs_bucket=variable.Variable.get('gcs_bucket_name', ''),
-        gcs_content_type=variable.Variable.get('gcs_content_type',
-                                               _GCS_CONTENT_TYPE).upper(),
-        gcs_prefix=variable.Variable.get('gcs_bucket_prefix', ''),
-        ads_credentials=variable.Variable.get('ads_credentials', ''),
-        ads_upload_key_type=variable.Variable.get('ads_upload_key_type', ''),
-        ads_cm_app_id=variable.Variable.get('ads_cm_app_id', None),
-        ads_cm_create_list=variable.Variable.get('ads_cm_create_list', True),
-        ads_cm_membership_lifespan=variable.Variable.get(
-            'ads_cm_membership_lifespan', _ADS_MEMBERSHIP_LIFESPAN_DAYS),
-        ads_cm_user_list_name=variable.Variable.get('ads_cm_user_list_name',
-                                                    ''),
+        gcs_bucket=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_name', fallback_value=''),
+        gcs_content_type=self.get_variable_value(
+            _DAG_NAME, 'gcs_content_type',
+            fallback_value=_GCS_CONTENT_TYPE).upper(),
+        gcs_prefix=self.get_variable_value(
+            _DAG_NAME, 'gcs_bucket_prefix', fallback_value=''),
+        ads_credentials=self.get_variable_value(_DAG_NAME, 'ads_credentials'),
+        ads_upload_key_type=self.get_variable_value(
+            _DAG_NAME, 'ads_upload_key_type', fallback_value=''),
+        ads_cm_app_id=self.get_variable_value(
+            _DAG_NAME, 'ads_cm_app_id', fallback_value=None),
+        ads_cm_create_list=self.get_variable_value(
+            _DAG_NAME,
+            'ads_cm_create_list',
+            expected_type=bool,
+            fallback_value=True),
+        ads_cm_membership_lifespan=self.get_variable_value(
+            _DAG_NAME,
+            'ads_cm_membership_lifespan',
+            expected_type=int,
+            fallback_value=_ADS_MEMBERSHIP_LIFESPAN_DAYS),
+        ads_cm_user_list_name=self.get_variable_value(
+            _DAG_NAME, 'ads_cm_user_list_name', fallback_value=''),
         dag=main_dag)
 
 
