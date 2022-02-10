@@ -103,7 +103,23 @@ class GoogleAdsHookTest(unittest.TestCase):
     self.assertEqual(new_id, 23456)
 
   def test_create_mobile_advertising_user_list(self):
-    self.mock_service.mutate.return_value = {'value': [{'id': 23456}]}
+    def _check_called_with_and_return(args):
+      expected = [{
+          'operator': 'ADD',
+          'operand': {
+              'xsi_type': 'CrmBasedUserList',
+              'name': 'my_user_list',
+              'description': ('A list of users uploaded from Adwords API via '
+                              'TCRM'),
+              'membershipLifeSpan': 8,
+              'uploadKeyType': 'MOBILE_ADVERTISING_ID',
+              'appId': 'fancyappid'
+          }
+      }]
+      self.assertEqual(args, expected)
+      return {'value': [{'id': 23456}]}
+
+    self.mock_service.mutate.side_effect = _check_called_with_and_return
 
     new_id = self.test_ads_hook.create_user_list(
         self.user_list_name,
@@ -111,17 +127,6 @@ class GoogleAdsHookTest(unittest.TestCase):
         8,
         'fancyappid')
 
-    self.mock_service.mutate.assert_called_with([{
-        'operator': 'ADD',
-        'operand': {
-            'xsi_type': 'CrmBasedUserList',
-            'name': 'my_user_list',
-            'description': 'A list of users uploaded from Adwords API via TCRM',
-            'membershipLifeSpan': 8,
-            'uploadKeyType': 'MOBILE_ADVERTISING_ID',
-            'appId': 'fancyappid'
-        }
-    }])
     self.assertEqual(new_id, 23456)
 
   def test_add_members_to_user_list_raise_error_at_mutate_members(self):

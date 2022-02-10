@@ -217,6 +217,10 @@ class GoogleAdsHook(base_hook.BaseHook):
         'uploadKeyType': upload_key_type.name,
     }
 
+    if (upload_key_type == UploadKeyType.MOBILE_ADVERTISING_ID and
+        app_id is not None):
+      new_user_list['appId'] = app_id
+
     operations = [{'operator': 'ADD', 'operand': new_user_list}]
     try:
       result = service.mutate(operations)
@@ -228,10 +232,6 @@ class GoogleAdsHook(base_hook.BaseHook):
           msg='Failed to create user list due to authentication error.',
           error_num=(errors.ErrorNameIDMap.
                      RETRIABLE_ERROR_OUTPUT_AUTHENTICATION_FAILED))
-
-    if (upload_key_type == UploadKeyType.MOBILE_ADVERTISING_ID and
-        app_id is not None):
-      new_user_list['appId'] = app_id
 
     if 'value' in result and len(result['value']):
       return result['value'][0]['id']
