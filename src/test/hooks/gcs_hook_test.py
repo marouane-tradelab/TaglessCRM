@@ -226,7 +226,7 @@ class JSONGoogleCloudStorageHookTest(unittest.TestCase):
 
       self.assertListEqual(
           [(blb.events, blb.location, blb.position) for blb in blobs_generator],
-          [(expected, self.gcs_hook.get_location(), 'blob_{}'.format(i)
+          [(expected, f'gs://bucket/blob_{i}', gcs_hook._START_POSITION_IN_BLOB,
            ) for i in range(1, 4)])
 
   def test_events_blobs_generator_with_erroneouse_blobs(self):
@@ -361,7 +361,7 @@ class CSVGoogleCloudStorageHookTest(unittest.TestCase):
 
       self.assertListEqual(
           [(blb.events, blb.location, blb.position) for blb in blobs_generator],
-          [(expected, self.gcs_hook.get_location(), 'blob_{}'.format(i)
+          [(expected, f'gs://bucket/blob_{i}', gcs_hook._START_POSITION_IN_BLOB
            ) for i in range(1, 4)])
 
   def test_events_blobs_generator_with_erroneous_blobs(self):
@@ -385,10 +385,10 @@ class CSVGoogleCloudStorageHookTest(unittest.TestCase):
     expected = [
         ([{
             'a': 1
-        }], 'gs://bucket/', 'blob_1'),
+        }], 'gs://bucket/blob_1', 0),
         ([{
             'a': 1
-        }], 'gs://bucket/', 'blob_4'),
+        }], 'gs://bucket/blob_4', 0),
     ]
     with mock.patch.object(gcs_hook.GoogleCloudStorageHook, 'get_blob_events',
                            autospec=True, return_value=events):

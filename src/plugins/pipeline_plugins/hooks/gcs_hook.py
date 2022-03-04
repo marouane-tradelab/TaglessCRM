@@ -281,11 +281,12 @@ class GoogleCloudStorageHook(gcs_hook.GoogleCloudStorageHook,
           blob_names.remove(processed_file)
 
     for blob_name in blob_names:
+      url = f'gs://{self.bucket}/{blob_name}'
       if not blob_name.endswith('/'):
         try:
           events = self.get_blob_events(blob_name)
-          yield blob.Blob(events=events, location=self.get_location(),
-                          position=blob_name)
+          yield blob.Blob(events=events, location=url,
+                          position=_START_POSITION_IN_BLOB)
         except (errors.DataInConnectorBlobParseError,
                 errors.DataInConnectorError) as error:
           continue
