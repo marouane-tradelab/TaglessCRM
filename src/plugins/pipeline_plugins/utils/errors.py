@@ -92,6 +92,7 @@ _ERROR_ID_DESCRIPTION_MAP = immutabledict.immutabledict({
     98: 'Error in sending event to Google Analytics 4. event params contain invalid value.',
     99: 'Error in sending event to Google Analytics 4. event params items contain invalid value.',
     100: 'Error in sending event to Google Analytics 4. payload is missing in event.',
+    101: 'Error in sending event to Google Ads API. Bad format of Ads credential YAML.',
 })
 
 
@@ -166,6 +167,7 @@ class ErrorNameIDMap(enum.Enum):
   GA4_HOOK_ERROR_VALUE_INVALID_EVENTS_PARAMS = 98
   GA4_HOOK_ERROR_VALUE_INVALID_EVENTS_PARAMS_ITEMS = 99
   GA4_HOOK_ERROR_MISSING_PAYLOAD_IN_EVENT = 100
+  ADS_HOOK_ERROR_BAD_YAML_FORMAT = 101
 
 
 class Error(Exception):

@@ -38,6 +38,7 @@ steps:
     && pip install freezegun \
     && pip install pytest-cov \
     && pip install mock \
+    && pip install parameterized \
     && cd src \
     && export PYTHONPATH=.:./plugins \
     && python -m pytest -v --cov=. \
