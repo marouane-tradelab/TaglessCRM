@@ -1,6 +1,6 @@
-# TCRM
+# TaglessCRM
 
-_Copyright 2021 Google LLC. This solution, including any related sample code or
+_Copyright 2022 Google LLC. This solution, including any related sample code or
 data, is made available on an “as is,” “as available,” and “with all faults”
 basis, solely for illustrative purposes, and without warranty or representation
 of any kind. This solution is experimental, unsupported and provided solely for
@@ -16,11 +16,14 @@ usage in connection with your business, if at all._
 
 ## Overview
 
-TCRM (TaglessCRM) is a lightweight, automated data transfer library for clients who want to upload their marketing data to Google Platforms. It guarantees sending the data once and only once, and removes the hustle of dealing directly with the Google APIs.
+[TaglessCRM](https://developers.google.com/taglesscrm) is a lightweight,
+automated data transfer library for clients who want to upload their marketing
+data to Google Platforms. By design, it sends the data once and only once,
+and removes the hustle of dealing directly with the Google APIs.
 
 Please refer to the following documentation for how to use this solution.
 
-1.  [Installation Guide](./docs/install-guide.md)
+1.  [Installation Guide](https://developers.google.com/taglesscrm/guides/usage-guides/install)
 
 
 ### Glossary of Terms
@@ -41,16 +44,17 @@ Cloud Storage                                                               | Cl
 
 ## DAGs
 
-DAG            | Definition
--------------- | ------------------------------------------------------------
-bq_to_ads_cm   | BigQuery To Google Ads Customer Match
-bq_to_ads_oc   | BigQuery To Google Ads Offline Conversion
-bq_to_ads_uac  | BigQuery To Google Ads Universal App Campaign
-bq_to_cm       | BigQuery To Campaign Manager Offline Conversions
-bq_to_ga       | BigQuery To Google Analytics
-gcs_to_ads_cm  | Google Cloud Storage To Google Ads Customer Match
-gcs_to_ads_oc  | Google Cloud Storage To Google Ads Offline Conversion
-gcs_to_ads_uac | Google Cloud Storage To Google Ads Universal App Campaign
-gcs_to_cm      | Google Cloud Storage To Campaign Manager Offline Conversions
-gcs_to_ga      | Google Cloud Storage To Google Analytics
-
+DAG              | Definition
+---------------- | ------------------------------------------------------------
+bq_to_ads_cm_v2  | BigQuery To Google Ads Customer Match
+bq_to_ads_oc_v2  | BigQuery To Google Ads Offline Conversion
+bq_to_ads_uac    | BigQuery To Google Ads Universal App Campaign
+bq_to_cm         | BigQuery To Campaign Manager Offline Conversions
+bq_to_ga         | BigQuery To Google Analytics
+bq_to_ga4        | BigQuery To Google Analytics 4
+gcs_to_ads_cm_v2 | Google Cloud Storage To Google Ads Customer Match
+gcs_to_ads_oc_v2 | Google Cloud Storage To Google Ads Offline Conversion
+gcs_to_ads_uac   | Google Cloud Storage To Google Ads Universal App Campaign
+gcs_to_cm        | Google Cloud Storage To Campaign Manager Offline Conversions
+gcs_to_ga        | Google Cloud Storage To Google Analytics
+gcs_to_ga_4      | Google Cloud Storage To Google Analytics 4
