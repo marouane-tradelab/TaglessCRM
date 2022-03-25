@@ -24,11 +24,8 @@ import mock
 import yaml
 
 from gps_building_blocks.cloud.utils import cloud_auth
-from plugins.pipeline_plugins.hooks import ads_cm_hook
 from plugins.pipeline_plugins.hooks import ads_cm_hook_v2
-from plugins.pipeline_plugins.hooks import ads_hook
 from plugins.pipeline_plugins.hooks import ads_hook_v2
-from plugins.pipeline_plugins.hooks import ads_oc_hook
 from plugins.pipeline_plugins.hooks import ads_oc_hook_v2
 from plugins.pipeline_plugins.hooks import bq_hook
 from plugins.pipeline_plugins.hooks import cm_hook
@@ -43,13 +40,6 @@ _DATASET_ID = 'test_dataset'
 _TABLE_ID = 'test_table'
 _PREFIX_DATASET_ID = _PREFIX + _DATASET_ID
 _PREFIX_TABLE_ID = _PREFIX + _TABLE_ID
-_ADS_CREDENTIALS = (
-    'adwords:\n'
-    '  client_customer_id: 123-456-7890\n'
-    '  developer_token: developer_token\n'
-    '  client_id: test.apps.googleusercontent.com\n'
-    '  client_secret: secret\n'
-    '  refresh_token: 1//token\n')
 _GOOGLE_ADS_YAML_CREDENTIALS = (
     'developer_token: 22chars\n'
     'client_id: 12chars-32chars.apps.googleusercontent.com\n'
@@ -58,13 +48,6 @@ _GOOGLE_ADS_YAML_CREDENTIALS = (
     'login_customer_id: 1234567890\n'
     'use_proto_plus: True\n'
 )
-_PREFIX_ADS_CREDENTIALS = (
-    'adwords:\n'
-    '  client_customer_id: 123-456-7890\n'
-    '  developer_token: prefix_developer_token\n'
-    '  client_id: test.apps.googleusercontent.com\n'
-    '  client_secret: secret\n'
-    '  refresh_token: 1//token\n')
 _PREFIX_GOOGLE_ADS_YAML_CREDENTIALS = (
     'developer_token: prefixed_22chars\n'
     'client_id: 12chars-32chars.apps.googleusercontent.com\n'
@@ -165,7 +148,6 @@ class DAGTest(unittest.TestCase):
         'gcs_bucket_name': _GCS_BUCKET_NAME,
         'gcs_bucket_prefix': _GCS_BUCKET_PREFIX,
         'gcs_content_type': _GCS_CONTENT_TYPE,
-        'ads_credentials': _ADS_CREDENTIALS,
         'ads_upload_key_type': _ADS_UPLOAD_KEY_TYPE,
         'ads_cm_app_id': _ADS_CM_APP_ID,
         'ads_cm_create_list': _ADS_CM_CREATE_LIST,
@@ -188,7 +170,6 @@ class DAGTest(unittest.TestCase):
         f'{dag_name}_gcs_bucket_name': _PREFIX_GCS_BUCKET_NAME,
         f'{dag_name}_gcs_bucket_prefix': _PREFIX_GCS_BUCKET_PREFIX,
         f'{dag_name}_gcs_content_type': _PREFIX_GCS_CONTENT_TYPE,
-        f'{dag_name}_ads_credentials': _PREFIX_ADS_CREDENTIALS,
         f'{dag_name}_ads_upload_key_type': _PREFIX_ADS_UPLOAD_KEY_TYPE,
         f'{dag_name}_ads_cm_app_id': _PREFIX_ADS_CM_APP_ID,
         f'{dag_name}_ads_cm_create_list': _PREFIX_ADS_CM_CREATE_LIST,
@@ -244,44 +225,9 @@ class DAGTest(unittest.TestCase):
       self.assertEqual(expected_hook.content_type, _GCS_CONTENT_TYPE)
       self.assertEqual(expected_hook.prefix, _GCS_BUCKET_PREFIX)
 
-  def verify_ads_oc_hook(self, expected_hook, is_var_prefixed):
-    self.assertIsInstance(
-        expected_hook, ads_oc_hook.GoogleAdsOfflineConversionsHook)
-
-    if is_var_prefixed:
-      self.assertEqual(expected_hook.yaml_doc, _PREFIX_ADS_CREDENTIALS)
-    else:
-      self.assertEqual(expected_hook.yaml_doc, _ADS_CREDENTIALS)
-
   def verify_ads_oc_hook_v2(self, expected_hook):
     self.assertIsInstance(
         expected_hook, ads_oc_hook_v2.GoogleAdsOfflineConversionsHook)
-
-  def verify_ads_cm_hook(self, expected_hook, is_var_prefixed):
-    self.assertIsInstance(expected_hook, ads_cm_hook.GoogleAdsCustomerMatchHook)
-
-    if is_var_prefixed:
-      self.assertEqual(
-          expected_hook.user_list_name, _PREFIX_ADS_CM_USER_LIST_NAME)
-      self.assertEqual(
-          expected_hook.upload_key_type,
-          ads_hook.UploadKeyType[_PREFIX_ADS_UPLOAD_KEY_TYPE])
-      self.assertEqual(expected_hook.yaml_doc, _PREFIX_ADS_CREDENTIALS)
-      self.assertEqual(
-          expected_hook.membership_lifespan,
-          int(_PREFIX_ADS_CM_MEMBERSHIP_LIFESPAN))
-      self.assertEqual(
-          expected_hook.create_list, bool(_PREFIX_ADS_CM_CREATE_LIST))
-    else:
-      self.assertEqual(expected_hook.app_id, _ADS_CM_APP_ID)
-      self.assertEqual(expected_hook.user_list_name, _ADS_CM_USER_LIST_NAME)
-      self.assertEqual(expected_hook.upload_key_type,
-                       ads_hook.UploadKeyType[_ADS_UPLOAD_KEY_TYPE])
-      self.assertEqual(expected_hook.yaml_doc, _ADS_CREDENTIALS)
-      self.assertEqual(
-          expected_hook.membership_lifespan, int(_ADS_CM_MEMBERSHIP_LIFESPAN))
-      self.assertEqual(expected_hook.create_list, bool(_ADS_CM_CREATE_LIST))
-      self.assertEqual(expected_hook.app_id, _ADS_CM_APP_ID)
 
   def verify_ads_cm_hook_v2(self, expected_hook, is_var_prefixed):
     self.assertIsInstance(expected_hook,
