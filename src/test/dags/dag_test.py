@@ -29,6 +29,7 @@ from plugins.pipeline_plugins.hooks import ads_cm_hook_v2
 from plugins.pipeline_plugins.hooks import ads_hook
 from plugins.pipeline_plugins.hooks import ads_hook_v2
 from plugins.pipeline_plugins.hooks import ads_oc_hook
+from plugins.pipeline_plugins.hooks import ads_oc_hook_v2
 from plugins.pipeline_plugins.hooks import bq_hook
 from plugins.pipeline_plugins.hooks import cm_hook
 from plugins.pipeline_plugins.hooks import ga4_hook
@@ -251,6 +252,10 @@ class DAGTest(unittest.TestCase):
       self.assertEqual(expected_hook.yaml_doc, _PREFIX_ADS_CREDENTIALS)
     else:
       self.assertEqual(expected_hook.yaml_doc, _ADS_CREDENTIALS)
+
+  def verify_ads_oc_hook_v2(self, expected_hook):
+    self.assertIsInstance(
+        expected_hook, ads_oc_hook_v2.GoogleAdsOfflineConversionsHook)
 
   def verify_ads_cm_hook(self, expected_hook, is_var_prefixed):
     self.assertIsInstance(expected_hook, ads_cm_hook.GoogleAdsCustomerMatchHook)
