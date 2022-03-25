@@ -27,6 +27,12 @@ from gps_building_blocks.cloud.utils import cloud_auth
 from plugins.pipeline_plugins.utils import hook_factory
 
 _HOOKS_KWARGS = {'ads_credentials': 'ads_credentials',
+                 'google_ads_yaml_credentials': ('developer_token: fake_value\n'
+                                                 'client_id: fake_value\n'
+                                                 'client_secret: fake_value\n'
+                                                 'refresh_token: fake_value\n'
+                                                 'login_customer_id: 0\n'
+                                                 'use_proto_plus: True'),
                  'ads_upload_key_type': 'CRM_ID',
                  'ads_cm_app_id': '1',
                  'ads_cm_create_list': True,

@@ -37,7 +37,9 @@ Example usage:
 import enum
 
 from plugins.pipeline_plugins.hooks import ads_cm_hook
+from plugins.pipeline_plugins.hooks import ads_cm_hook_v2
 from plugins.pipeline_plugins.hooks import ads_oc_hook
+from plugins.pipeline_plugins.hooks import ads_oc_hook_v2
 from plugins.pipeline_plugins.hooks import ads_uac_hook
 from plugins.pipeline_plugins.hooks import bq_hook
 from plugins.pipeline_plugins.hooks import cm_hook
@@ -56,6 +58,8 @@ class InputHookType(enum.Enum):
 class OutputHookType(enum.Enum):
   GOOGLE_ADS_CUSTOMER_MATCH = ads_cm_hook.GoogleAdsCustomerMatchHook
   GOOGLE_ADS_OFFLINE_CONVERSIONS = ads_oc_hook.GoogleAdsOfflineConversionsHook
+  GOOGLE_ADS_CUSTOMER_MATCH_V2 = ads_cm_hook_v2.GoogleAdsCustomerMatchHook
+  GOOGLE_ADS_OFFLINE_CONVERSIONS_V2 = ads_oc_hook_v2.GoogleAdsOfflineConversionsHook
   GOOGLE_ADS_UNIVERSAL_APP_CAMPAIGN = ads_uac_hook.AdsUniversalAppCampaignHook
   GOOGLE_ANALYTICS = ga_hook.GoogleAnalyticsHook
   GOOGLE_ANALYTICS_4 = ga4_hook.GoogleAnalyticsV4Hook
