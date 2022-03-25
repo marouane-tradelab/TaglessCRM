@@ -21,10 +21,13 @@ from airflow.contrib.hooks import gcp_api_base_hook
 from airflow.models import dag
 from airflow.models import variable
 import mock
+import yaml
 
 from gps_building_blocks.cloud.utils import cloud_auth
 from plugins.pipeline_plugins.hooks import ads_cm_hook
+from plugins.pipeline_plugins.hooks import ads_cm_hook_v2
 from plugins.pipeline_plugins.hooks import ads_hook
+from plugins.pipeline_plugins.hooks import ads_hook_v2
 from plugins.pipeline_plugins.hooks import ads_oc_hook
 from plugins.pipeline_plugins.hooks import bq_hook
 from plugins.pipeline_plugins.hooks import cm_hook
@@ -46,6 +49,14 @@ _ADS_CREDENTIALS = (
     '  client_id: test.apps.googleusercontent.com\n'
     '  client_secret: secret\n'
     '  refresh_token: 1//token\n')
+_GOOGLE_ADS_YAML_CREDENTIALS = (
+    'developer_token: 22chars\n'
+    'client_id: 12chars-32chars.apps.googleusercontent.com\n'
+    'client_secret: 6chars-28chars\n'
+    'refresh_token: 1//28chars-12chars-58chars\n'
+    'login_customer_id: 1234567890\n'
+    'use_proto_plus: True\n'
+)
 _PREFIX_ADS_CREDENTIALS = (
     'adwords:\n'
     '  client_customer_id: 123-456-7890\n'
@@ -53,13 +64,21 @@ _PREFIX_ADS_CREDENTIALS = (
     '  client_id: test.apps.googleusercontent.com\n'
     '  client_secret: secret\n'
     '  refresh_token: 1//token\n')
+_PREFIX_GOOGLE_ADS_YAML_CREDENTIALS = (
+    'developer_token: prefixed_22chars\n'
+    'client_id: 12chars-32chars.apps.googleusercontent.com\n'
+    'client_secret: 6chars-28chars\n'
+    'refresh_token: 1//28chars-12chars-58chars\n'
+    'login_customer_id: 1234567890\n'
+    'use_proto_plus: True\n'
+)
 _ADS_UPLOAD_KEY_TYPE = 'CRM_ID'
 _PREFIX_ADS_UPLOAD_KEY_TYPE = 'CONTACT_INFO'
 _ADS_CM_APP_ID = '1'
 _PREFIX_ADS_CM_APP_ID = _PREFIX + _ADS_CM_APP_ID
 _ADS_CM_CREATE_LIST = 'True'
 _PREFIX_ADS_CM_CREATE_LIST = 'False'
-_ADS_CM_MEMBERSHIP_LIFESPAN = '8'
+_ADS_CM_MEMBERSHIP_LIFESPAN = '10'
 _PREFIX_ADS_CM_MEMBERSHIP_LIFESPAN = '4'
 _ADS_CM_USER_LIST_NAME = 'my_list'
 _PREFIX_ADS_CM_USER_LIST_NAME = _PREFIX + _ADS_CM_USER_LIST_NAME
@@ -83,6 +102,8 @@ _GCS_BUCKET_PREFIX = 'test_dataset'
 _PREFIX_GCS_BUCKET_PREFIX = _PREFIX + _GCS_BUCKET_PREFIX
 _GCS_CONTENT_TYPE = 'JSON'
 _PREFIX_GCS_CONTENT_TYPE = 'CSV'
+_API_VERSION = '9'
+_PREFIX_API_VERSION = '8'
 
 
 class DAGTest(unittest.TestCase):
@@ -155,7 +176,10 @@ class DAGTest(unittest.TestCase):
         'payload_type': _PAYLOAD_TYPE,
         'measurement_id': _MEASUREMENT_ID,
         'firebase_app_id': _FIREBASE_APP_ID,
-        'ga_tracking_id': _GA_TRACKING_ID
+        'ga_tracking_id': _GA_TRACKING_ID,
+        'google_ads_yaml_credentials': _GOOGLE_ADS_YAML_CREDENTIALS,
+        'ads_cm_membership_lifespan_in_days': _ADS_CM_MEMBERSHIP_LIFESPAN,
+        'api_version': _API_VERSION
     }
     self.prefixed_variables = {
         f'{dag_name}_bq_dataset_id': _PREFIX_DATASET_ID,
@@ -176,7 +200,12 @@ class DAGTest(unittest.TestCase):
         f'{dag_name}_payload_type': _PREFIX_PAYLOAD_TYPE,
         f'{dag_name}_measurement_id': _PREFIX_MEASUREMENT_ID,
         f'{dag_name}_firebase_app_id': _PREFIX_FIREBASE_APP_ID,
-        f'{dag_name}_ga_tracking_id': _PREFIX_GA_TRACKING_ID
+        f'{dag_name}_ga_tracking_id': _PREFIX_GA_TRACKING_ID,
+        f'{dag_name}_google_ads_yaml_credentials':
+            _PREFIX_GOOGLE_ADS_YAML_CREDENTIALS,
+        f'{dag_name}_ads_cm_membership_lifespan_in_days':
+            _PREFIX_ADS_CM_MEMBERSHIP_LIFESPAN,
+        f'{dag_name}_api_version': _PREFIX_API_VERSION
     }
 
   def add_prefixed_airflow_variables(self):
@@ -248,6 +277,41 @@ class DAGTest(unittest.TestCase):
           expected_hook.membership_lifespan, int(_ADS_CM_MEMBERSHIP_LIFESPAN))
       self.assertEqual(expected_hook.create_list, bool(_ADS_CM_CREATE_LIST))
       self.assertEqual(expected_hook.app_id, _ADS_CM_APP_ID)
+
+  def verify_ads_cm_hook_v2(self, expected_hook, is_var_prefixed):
+    self.assertIsInstance(expected_hook,
+                          ads_cm_hook_v2.GoogleAdsCustomerMatchHook)
+
+    if is_var_prefixed:
+      self.assertEqual(expected_hook.user_list_name,
+                       _PREFIX_ADS_CM_USER_LIST_NAME)
+      self.assertEqual(expected_hook.upload_key_type,
+                       _PREFIX_ADS_UPLOAD_KEY_TYPE)
+      self.assertEqual(
+          expected_hook.membership_lifespan,
+          int(_PREFIX_ADS_CM_MEMBERSHIP_LIFESPAN))
+      self.assertEqual(
+          expected_hook.create_list, bool(_PREFIX_ADS_CM_CREATE_LIST))
+    else:
+      self.assertEqual(expected_hook.app_id, _ADS_CM_APP_ID)
+      self.assertEqual(expected_hook.user_list_name, _ADS_CM_USER_LIST_NAME)
+      self.assertEqual(expected_hook.upload_key_type,
+                       _ADS_UPLOAD_KEY_TYPE)
+      self.assertEqual(
+          expected_hook.membership_lifespan, int(_ADS_CM_MEMBERSHIP_LIFESPAN))
+      self.assertEqual(expected_hook.create_list, bool(_ADS_CM_CREATE_LIST))
+      self.assertEqual(expected_hook.app_id, _ADS_CM_APP_ID)
+
+  def verify_ads_hook_v2_credential(self, expected_hook, is_var_prefixed):
+    self.assertIsInstance(expected_hook, ads_hook_v2.GoogleAdsHook)
+    if is_var_prefixed:
+      self.assertEqual(expected_hook.api_version, 'v' + _PREFIX_API_VERSION)
+      self.assertDictEqual(expected_hook.config_data, yaml.safe_load(
+          _PREFIX_GOOGLE_ADS_YAML_CREDENTIALS))
+    else:
+      self.assertEqual(expected_hook.api_version, 'v' + _API_VERSION)
+      self.assertDictEqual(expected_hook.config_data, yaml.safe_load(
+          _GOOGLE_ADS_YAML_CREDENTIALS))
 
   def verify_cm_hook(self, expected_hook, is_var_prefixed):
     self.assertIsInstance(expected_hook, cm_hook.CampaignManagerHook)
