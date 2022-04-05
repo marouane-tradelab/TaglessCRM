@@ -239,7 +239,7 @@ class GoogleAdsHook(base_hook.BaseHook):
           msg=str(json_decode_error), error=json_decode_error
       ) from json_decode_error
     except requests.RequestException as request_exception:
-      self._handle_request_exception(request_exception)
+      self._handle_request_exception(request_exception)  # pytype: disable=bad-return-type  # py39-upgrade
 
   @tenacity.retry(
       retry=tenacity.retry_if_exception_type(
