@@ -206,6 +206,13 @@ class GoogleAnalyticsHookTest(unittest.TestCase):
     with self.assertRaises(errors.DataOutConnectorValueError):
       ga_hook.GoogleAnalyticsHook('UA-123-b', self.event_test_data)
 
+  def test_ga_hook_get_tracking_id_with_whitespace(self):
+    """Test GoogleAnalyticsHook with tracking id with whitespace."""
+    actual = '  ' + self.test_tracking_id + '  '
+    test_hook = ga_hook.GoogleAnalyticsHook(actual)
+    expected = self.test_tracking_id
+    self.assertEqual(test_hook.tracking_id, expected)
+
   def test_ga_hook_send_single_hit_with_dry_run(self):
     """Test GoogleAnalyticsHook sends single hit with dryrun."""
     self.test_hook.dry_run = True

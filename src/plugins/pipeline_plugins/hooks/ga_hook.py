@@ -221,6 +221,7 @@ class GoogleAnalyticsHook(output_hook_interface.OutputHookInterface):
       ga_dry_run: If True, this will not send real hits to the endpoint.
       **kwargs: Other optional arguments.
     """
+    ga_tracking_id = ga_tracking_id.strip()
     self._validate_tracking_id(ga_tracking_id)
     self.tracking_id = ga_tracking_id
     self.dry_run = ga_dry_run
