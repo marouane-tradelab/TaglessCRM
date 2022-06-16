@@ -125,6 +125,24 @@ class SystemVerificationUtilsTest(unittest.TestCase):
     with self.assertRaises(RuntimeError):
       system_testing_utils.insert_rows_to_table([], 'table_id')
 
+  @unittest.mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
+  def test_get_payload_from_secret_manager(self, mock_client_class):
+    path_to_secret = 'path/to/secret'
+    secret_payload = b'test'
+    project_id = 'project_id'
+    secret_name = 'secret_name'
+    secret_ver = 'secret_ver'
+
+    mock_client_class.return_value.secret_version_path.return_value = path_to_secret
+    mock_client_class.return_value.access_secret_version.return_value.payload.data = secret_payload
+    actual = system_testing_utils.get_payload_from_secret_manager(
+        project_id, secret_name, secret_ver)
+    mock_client_class.return_value.secret_version_path.assert_called_with(
+        project_id, secret_name, secret_ver)
+    mock_client_class.return_value.access_secret_version.assert_called_with(
+        name=path_to_secret)
+    self.assertEqual(actual, secret_payload.decode('UTF-8'))
+
 
 if __name__ == '__main__':
   unittest.main()

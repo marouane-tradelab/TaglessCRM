@@ -21,6 +21,7 @@ import os
 import subprocess
 
 from google.cloud import bigquery
+from google.cloud import secretmanager
 
 _AIRFLOW_HOME = 'AIRFLOW_HOME'
 
@@ -76,3 +77,22 @@ def insert_rows_to_table(rows, table_id):
   errors = client.insert_rows_json(table_id, rows)
   if errors:
     raise RuntimeError(errors)
+
+
+def get_payload_from_secret_manager(project_id: str, secret_name: str,
+                                    secret_ver: str) -> str:
+  """Gets a secret payload from Secret Manager.
+
+  Args:
+    project_id: The ID for the cloud project.
+    secret_name: The name of the secret stored in Secret Manager.
+    secret_ver: The version of the secret stored in Secret Manager.
+
+  Returns:
+    A payload of the secret.
+  """
+  client = secretmanager.SecretManagerServiceClient()
+  name = client.secret_version_path(project_id, secret_name, secret_ver)
+  response = client.access_secret_version(name=name)
+  payload = response.payload.data.decode('UTF-8')
+  return payload
