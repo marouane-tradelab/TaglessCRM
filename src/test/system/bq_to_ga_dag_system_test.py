@@ -16,9 +16,8 @@
 """System tests for dags.bq_to_ga_dag."""
 
 import datetime
+import json
 import os
-
-from google.cloud import datastore
 import pytest
 
 from plugins.pipeline_plugins.utils import system_testing_utils
@@ -26,25 +25,23 @@ from plugins.pipeline_plugins.utils import system_testing_utils
 _AIRFLOW_HOME = 'AIRFLOW_HOME'
 _TEST_DAG_NAME = 'tcrm_bq_to_ga'
 _TEST_TASK_NAME = 'bq_to_ga_task'
+_GCP_PROJECT_ID = 'tcrm-project'
 _BQ_PROJECT_ID = 'bq_project_id'
 _BQ_DATASET_ID = 'tcrm_bq_to_ga_bq_dataset_id'
 _BQ_TABLE_ID = 'tcrm_bq_to_ga_bq_table_id'
 _GA_TRACKING_ID = 'ga_tracking_id'
 _BQ_CONN_DEFAULT = 'bigquery_default'
-_GCD_CONN_DEFAULT = 'google_cloud_datastore_default'
 _IS_RETRY = _TEST_DAG_NAME + '_is_retry'
 _IS_RUN = _TEST_DAG_NAME + '_is_run'
 
 
 @pytest.fixture(name='configuration')
 def fixture_configuration():
-  client = datastore.Client()
-  kind = 'configuration'
-  name = 'bq_to_ga'
-  namespace = 'tcrm-system-test'
-  entity_key = client.key(kind, name, namespace=namespace)
-  entity = client.get(entity_key)
-  return entity
+  secret_name = 'bq_to_ga'
+  secret_ver = '1'
+  payload = system_testing_utils.get_payload_from_secret_manager(
+      _GCP_PROJECT_ID, secret_name, secret_ver)
+  return json.loads(payload)
 
 
 @pytest.mark.systemtest
