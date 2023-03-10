@@ -27,18 +27,12 @@ steps:
   - |
     mkdir -p src/gps_building_blocks/cloud/utils \
     && cp -r gps_building_blocks/py/gps_building_blocks/cloud/utils/* src/gps_building_blocks/cloud/utils
-- name: python:3.7-buster
+- name: python:3.9-buster
   entrypoint: bash
   args:
   - '-c'
   - |
-    pip install -r requirements.txt \
-    && pip install pytest \
-    && pip install requests_mock \
-    && pip install freezegun \
-    && pip install pytest-cov \
-    && pip install mock \
-    && pip install parameterized \
+    pip install -r requirements.txt --require-hashes --no-deps \
     && cd src \
     && export PYTHONPATH=.:./plugins \
     && python -m pytest -v --cov=. \

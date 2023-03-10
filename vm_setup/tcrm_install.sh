@@ -64,7 +64,6 @@ os_components() {
     python3-pip \
     python3-setuptools \
     git
-  sudo python3 -m pip install --upgrade pip > /dev/null
   sudo snap install core
   sudo snap refresh core
   sudo snap install --classic certbot > /dev/null
@@ -240,8 +239,7 @@ setup_tcrm() {
 
   webserver_config
 
-  sudo pip3 install -r ./requirements.txt
-  sudo pip3 install apache-airflow[google_auth]==1.10.15
+  sudo pip3 install -r ./requirements.txt --require-hashes --no-deps
 
   cd ..
 
