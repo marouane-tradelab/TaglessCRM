@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2022 Google LLC.
+# Copyright 2023 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ from plugins.pipeline_plugins.hooks import ads_hook_v2
 from plugins.pipeline_plugins.utils import errors
 
 
-_GOOGLE_ADS_API_BASE = 'https://googleads.googleapis.com/v10'
+_GOOGLE_ADS_API_BASE = 'https://googleads.googleapis.com/v12'
 
 # Individual Ads account customer ID
 _MOCK_CUSTOMER_ID = '1234567890'

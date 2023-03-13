@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2022 Google LLC.
+# Copyright 2023 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ CLICK_CONVERSION_FIELDS = {
     CURRENCY_CODE: CURRENCY_CODE
 }
 
-_API_VERSION = '10'
+_API_VERSION = '12'
 _MAX_RETRIES = 3
 _LOG_FORMAT = 'blob_index=%s field=%s error_code=%s message=%s'
 
