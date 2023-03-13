@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 Google LLC.
+# Copyright 2023 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 # Docker file for running TCRM cloudbuid CI tests.
 
-FROM python:3.7-slim-buster
+FROM python:3.9-slim-buster
 
 COPY requirements.txt /requirements.txt
 
@@ -24,13 +24,7 @@ RUN set -ex \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         build-essential \
-    && pip install -r /requirements.txt \
-    && pip install --upgrade protobuf \
-    && pip install mock \
-        pytest \
-        requests_mock \
-        freezegun \
-        pytest-cov
+    && pip install -r /requirements.txt
 
 ADD . /root/tcrm
 
