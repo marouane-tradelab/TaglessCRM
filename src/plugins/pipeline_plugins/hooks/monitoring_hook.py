@@ -335,7 +335,7 @@ class MonitoringHook(
       yield row[0], row[1]
       row = bq_cursor.fetchone()
 
-  def events_blobs_generator(self) -> Generator[blob.Blob, None, None]:
+  def events_blobs_generator(self) -> Generator[blob.Blob, None, None]:  # pytype: disable=signature-mismatch  # overriding-parameter-count-checks
     """Generates blobs of retriable failed events stored in monitoring.
 
     Retrieves all retriable failed events (of same dag_name and location) from
