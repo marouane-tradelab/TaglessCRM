@@ -24,7 +24,7 @@ RUN set -ex \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         build-essential \
-    && pip install -r /requirements.txt
+    && pip install -r /requirements.txt --require-hashes
 
 ADD . /root/tcrm
 
