@@ -190,8 +190,9 @@ class DAGTest(unittest.TestCase):
     }
 
   def add_prefixed_airflow_variables(self):
-    self.airflow_variables = {**self.airflow_variables,
-                              **self.prefixed_variables}
+    if self.prefixed_variables and self.airflow_variables:
+      self.airflow_variables = {**self.airflow_variables,
+                                **self.prefixed_variables}
 
   def verify_created_tasks(self, test_dag, expected_task_ids):
     self.assertIsInstance(test_dag, dag.DAG)
