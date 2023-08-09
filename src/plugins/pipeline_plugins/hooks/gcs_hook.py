@@ -24,9 +24,9 @@ from airflow.contrib.hooks import gcs_hook
 from google.api_core.exceptions import NotFound
 from googleapiclient import errors as googleapiclient_errors
 
-from plugins.pipeline_plugins.hooks import input_hook_interface
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.hooks import input_hook_interface
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
 
 _PLATFORM = 'GCS'
 _START_POSITION_IN_BLOB = 0

@@ -22,8 +22,8 @@ import requests
 import tenacity
 import yaml
 
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import type_alias
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import type_alias
 
 DEFAULT_MEMBERSHIP_LIFESPAN_DAYS = 8
 DEFAULT_CURRENCY_CODE = 'JPY'
@@ -231,6 +231,9 @@ class GoogleAdsHook(base_hook.BaseHook):
           api_version=self.api_version, customer_id=customer_id)
 
       response = self._send_api_request(url, request_params)
+      print('/////////', response)
+      with open('/tmp/response.json','w') as f: 
+        json.dump(response,f )
       return self._check_response(payloads, response)
 
     except json.JSONDecodeError as json_decode_error:
@@ -380,7 +383,7 @@ class GoogleAdsHook(base_hook.BaseHook):
 
     headers = self._get_http_header()
     response = requests.request(
-        url=url, method=method, json=params, headers=headers)
+        url=url, method=method, json=params, headers=headers)        
     response.raise_for_status()
     return response.json()
 

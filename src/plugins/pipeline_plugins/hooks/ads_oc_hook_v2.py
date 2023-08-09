@@ -17,11 +17,11 @@
 
 from typing import Any, Dict, List, Tuple, Generator
 
-from plugins.pipeline_plugins.hooks import ads_hook_v2
-from plugins.pipeline_plugins.hooks import output_hook_interface
-from plugins.pipeline_plugins.utils import blob as blob_lib
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import type_alias
+from pipeline_plugins.hooks import ads_hook_v2
+from pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.utils import blob as blob_lib
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import type_alias
 
 
 class GoogleAdsOfflineConversionsHook(

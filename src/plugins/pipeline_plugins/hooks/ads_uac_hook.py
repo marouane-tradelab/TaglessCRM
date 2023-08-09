@@ -28,10 +28,10 @@ import urllib.parse
 
 from airflow.hooks import http_hook
 
-from plugins.pipeline_plugins.hooks import output_hook_interface
-from plugins.pipeline_plugins.utils import async_utils
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.utils import async_utils
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
 
 # RDID (raw device id) should be in UUID format.
 _RDID_PATTERN = '^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}$'

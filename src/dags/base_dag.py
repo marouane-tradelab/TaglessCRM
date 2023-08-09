@@ -20,15 +20,15 @@ import datetime
 import logging
 from typing import Any, Optional
 
-from airflow import utils
+from airflow import DAG, utils
 from airflow.exceptions import AirflowException
-from airflow.models import baseoperator
-from airflow.models import dag
+from airflow.models.baseoperator import BaseOperator
+from airflow.models.variable import Variable
 from airflow.models import variable
 
-from plugins.pipeline_plugins.operators import error_report_operator
-from plugins.pipeline_plugins.operators import monitoring_cleanup_operator
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.operators import error_report_operator
+from pipeline_plugins.operators import monitoring_cleanup_operator
+from pipeline_plugins.utils import errors
 
 # Airflow DAG configurations.
 _DAG_RETRIES = 0
@@ -71,7 +71,7 @@ _DAG_IS_RUN = True
 
 
 def create_error_report_task(
-    error_report_dag: Optional[dag.DAG],
+    error_report_dag: Optional[DAG],
     error: Exception) -> error_report_operator.ErrorReportOperator:
   """Creates an error task and attaches it to the DAG.
 
@@ -130,134 +130,64 @@ class BaseDag(abc.ABC):
     self.dag_name = dag_name
 
     self.dag_retries = int(
-        variable.Variable.get(f'{self.dag_name}_retries', _DAG_RETRIES))
+        Variable.get(f'{self.dag_name}_retries', _DAG_RETRIES))
     self.dag_retry_delay = int(
-        variable.Variable.get(f'{self.dag_name}_retry_delay',
+        Variable.get(f'{self.dag_name}_retry_delay',
                               _DAG_RETRY_DELAY_MINUTES))
-    self.dag_schedule = variable.Variable.get(f'{self.dag_name}_schedule',
+    self.dag_schedule = Variable.get(f'{self.dag_name}_schedule',
                                               _DAG_SCHEDULE)
     self.dag_is_retry = bool(
-        int(variable.Variable.get(f'{self.dag_name}_is_retry', _DAG_IS_RETRY)))
+        int(Variable.get(f'{self.dag_name}_is_retry', _DAG_IS_RETRY)))
     self.dag_is_run = bool(
-        int(variable.Variable.get(f'{self.dag_name}_is_run', _DAG_IS_RUN)))
+        int(Variable.get(f'{self.dag_name}_is_run', _DAG_IS_RUN)))
 
     self.dag_enable_run_report = bool(
         int(
-            variable.Variable.get(f'{self.dag_name}_enable_run_report',
+            Variable.get(f'{self.dag_name}_enable_run_report',
                                   _ENABLE_RETURN_REPORT)))
 
     self.dag_enable_monitoring = bool(
         int(
-            variable.Variable.get(f'{self.dag_name}_enable_monitoring',
+            Variable.get(f'{self.dag_name}_enable_monitoring',
                                   _DAG_ENABLE_MONITORING)))
-
     self.dag_enable_monitoring_cleanup = bool(
         int(
-            variable.Variable.get(f'{self.dag_name}_enable_monitoring_cleanup',
+            Variable.get(f'{self.dag_name}_enable_monitoring_cleanup',
                                   _DEFAULT_DAG_ENABLE_MONITORING_CLEANUP)))
 
     self.days_to_live = int(
-        variable.Variable.get('monitoring_data_days_to_live',
+        Variable.get(f'{self.dag_name}_days_to_live',
                               _DEFAULT_MONITORING_DATA_DAYS_TO_LIVE))
-
-    self.monitoring_dataset = variable.Variable.get(
-        'monitoring_dataset', _DEFAULT_MONITORING_DATASET_ID)
-    self.monitoring_table = variable.Variable.get('monitoring_table',
-                                                  _DEFAULT_MONITORING_TABLE_ID)
-    self.monitoring_bq_conn_id = variable.Variable.get('monitoring_bq_conn_id',
-                                                       _MONITORING_BQ_CONN_ID)
-
-  def _initialize_dag(self) -> dag.DAG:
-    """Initializes an Airflow DAG with appropriate default args.
-
-    Returns:
-      models.DAG: Instance models.DAG.
-    """
-    logging.info('Running pipeline at schedule %s.', self.dag_schedule)
-
-    default_args = {
-        'retries': self.dag_retries,
-        'retry_delay': datetime.timedelta(minutes=self.dag_retry_delay),
-        'start_date': utils.dates.days_ago(1)
-    }
-
-    return dag.DAG(
-        dag_id=self.dag_name,
-        schedule_interval=self.dag_schedule,
-        catchup=False,
-        default_args=default_args)
+    self.monitoring_dataset = Variable.get(
+        f'{self.dag_name}_monitoring_dataset',
+        _DEFAULT_MONITORING_DATASET_ID)
+    self.monitoring_table = Variable.get(
+        f'{self.dag_name}_monitoring_table', _DEFAULT_MONITORING_TABLE_ID)
+    self.monitoring_bq_conn_id = Variable.get(
+        f'{self.dag_name}_monitoring_bq_conn_id', _MONITORING_BQ_CONN_ID)
 
   @abc.abstractmethod
-  def create_task(
-      self,
-      main_dag: Optional[dag.DAG] = None,
-      is_retry: bool = False) -> baseoperator.BaseOperator:
-    """Creates a task and attaches it to the DAG.
+  def create_task(self, main_dag: DAG, is_retry: bool) -> BaseOperator:
+    """Creates a task in the given DAG.
 
     Args:
       main_dag: The DAG that tasks attach to.
-      is_retry: Whether or not the operator should include a retry task.
+      is_retry: Whether the task is a retry or a run.
 
     Returns:
-      An instance of models.BaseOperator.
+      A task that has been attached to the DAG.
     """
-    pass
 
-  def _try_create_task(self, main_dag: dag.DAG, is_retry: bool) -> Any:
-    """Tries to create an Airflow task.
-
-    Args:
-      main_dag: The DAG that tasks attach to.
-      is_retry: Whether or not the operator should include a retry task.
-
-    Raises:
-      DAGError raised when task is failed to create.
+  def create_dag(self) -> DAG:
+    """Creates a DAG.
 
     Returns:
-      Airflow task instance.
+      A DAG instance.
     """
-    try:
-      return self.create_task(main_dag=main_dag, is_retry=is_retry)
-    except (errors.DataOutConnectorValueError,
-            errors.DataInConnectorValueError,
-            AirflowException,
-            ValueError) as error:
-      raise errors.DAGError(error=error, msg='Couldn\'t create task.')
-
-  def _create_cleanup_task(self, main_dag: dag.DAG) -> Any:
-    """Creates and initializes the cleanup task.
-
-    Args:
-      main_dag: The dag that the task attaches to.
-
-    Returns:
-      MonitoringCleanupOperator.
-    """
-    try:
-      return monitoring_cleanup_operator.MonitoringCleanupOperator(
-          task_id='monitoring_cleanup_task',
-          monitoring_bq_conn_id=self.monitoring_bq_conn_id,
-          monitoring_dataset=self.monitoring_dataset,
-          monitoring_table=self.monitoring_table,
-          days_to_live=self.days_to_live,
-          dag_name=self.dag_name,
-          dag=main_dag)
-    except (errors.DataOutConnectorValueError,
-            errors.DataInConnectorValueError,
-            AirflowException,
-            ValueError) as error:
-      raise errors.DAGError(error=error, msg='Couldn\'t create cleanup task.')
-
-  def create_dag(self) -> dag.DAG:
-    """Creates the DAG.
-
-    Returns:
-      Airflow DAG instance.
-    """
-
     main_dag = self._initialize_dag()
 
     try:
+      retry_task = None
       if self.dag_is_retry:
         retry_task = self._try_create_task(main_dag=main_dag, is_retry=True)
       if self.dag_is_run:
@@ -266,7 +196,10 @@ class BaseDag(abc.ABC):
           run_task.set_upstream(retry_task)
         if self.dag_enable_monitoring_cleanup:
           cleanup_task = self._create_cleanup_task(main_dag=main_dag)
-          run_task.set_upstream(cleanup_task)
+          if self.dag_is_retry:
+            cleanup_task >> retry_task
+          else:
+            cleanup_task >> run_task
     except errors.DAGError as error:
       main_dag = self._initialize_dag()
       create_error_report_task(error_report_dag=main_dag, error=error)
@@ -288,6 +221,60 @@ class BaseDag(abc.ABC):
     else:
       return task_name + '_task'
 
+  def _initialize_dag(self) -> DAG:
+    """Initializes a DAG.
+
+    Returns:
+      A DAG instance.
+    """
+    return DAG(
+        self.dag_name,
+        default_args={
+            'retries': self.dag_retries,
+            'retry_delay': datetime.timedelta(minutes=self.dag_retry_delay),
+            'start_date': utils.dates.days_ago(1),
+        },
+        schedule_interval=self.dag_schedule,
+        catchup=False)
+
+  def _try_create_task(
+      self, main_dag: DAG, is_retry: bool) -> Optional[BaseOperator]:
+    """Attempts to create a task.
+
+    If it fails, it creates an error task.
+
+    Args:
+      main_dag: The DAG that tasks attach to.
+      is_retry: Whether the task is a retry or a run.
+
+    Returns:
+      A task.
+
+    Raises:
+      DAGError: If task creation fails.
+    """
+    try:
+      return self.create_task(main_dag=main_dag, is_retry=is_retry)
+    except Exception as e:  # pylint: disable=broad-except
+      logging.exception('Error creating task in dag %s', self.dag_name)
+      raise errors.DAGError(f'Error creating task in dag {self.dag_name}') from e
+
+  def _create_cleanup_task(self, main_dag: DAG) -> BaseOperator:
+    """Creates a cleanup task.
+
+    Args:
+      main_dag: The DAG that tasks attach to.
+
+    Returns:
+      A cleanup task.
+    """
+    return monitoring_cleanup_operator.MonitoringCleanupOperator(
+        task_id='cleanup',
+        monitoring_dataset_id=self.monitoring_dataset,
+        monitoring_table_id=self.monitoring_table,
+        bq_conn_id=self.monitoring_bq_conn_id,
+        days_to_live=self.days_to_live,
+        dag=main_dag)
   def get_variable_value(self,
                          prefix: str,
                          variable_name: str,

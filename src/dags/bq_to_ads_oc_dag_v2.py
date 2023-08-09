@@ -18,11 +18,17 @@
 import os
 from typing import Optional
 
-from airflow.models import dag
+from datetime import timedelta
 
-from dags import base_dag
-from plugins.pipeline_plugins.operators import data_connector_operator
-from plugins.pipeline_plugins.utils import hook_factory
+
+from airflow import DAG
+from airflow.operators.dummy import DummyOperator
+from airflow.utils.dates import days_ago
+from airflow.models import BaseOperator
+
+import base_dag
+from pipeline_plugins.operators import data_connector_operator_v2
+from pipeline_plugins.utils import hook_factory
 
 # Airflow configuration variables.
 _AIRFLOW_ENV = 'AIRFLOW_HOME'
@@ -35,7 +41,7 @@ _DAG_NAME = 'tcrm_bq_to_ads_oc_v2'
 # for more details on Managing Airflow connections.
 _BQ_CONN_ID = 'bigquery_default'
 
-_DEFAULT_API_VERSION = '10'
+_DEFAULT_API_VERSION = '13'
 
 
 class BigQueryToAdsOCDagV2(base_dag.BaseDag):
@@ -43,8 +49,8 @@ class BigQueryToAdsOCDagV2(base_dag.BaseDag):
 
   def create_task(
       self,
-      main_dag: Optional[dag.DAG] = None,
-      is_retry: bool = False) -> data_connector_operator.DataConnectorOperator:
+      main_dag: Optional[DAG] = None,
+      is_retry: bool = False) -> data_connector_operator_v2.BigQueryToAdsOCOperator:
     """Creates and initializes the main DAG.
 
     Args:
@@ -54,12 +60,9 @@ class BigQueryToAdsOCDagV2(base_dag.BaseDag):
     Returns:
       DataConnectorOperator.
     """
-    return data_connector_operator.DataConnectorOperator(
+    return data_connector_operator_v2.BigQueryToAdsOCOperator(
         dag_name=_DAG_NAME,
         task_id=self.get_task_id('bq_to_ads_oc', is_retry),
-        input_hook=hook_factory.InputHookType.BIG_QUERY,
-        output_hook=hook_factory.OutputHookType
-        .GOOGLE_ADS_OFFLINE_CONVERSIONS_V2,
         is_retry=is_retry,
         return_report=self.dag_enable_run_report,
         enable_monitoring=self.dag_enable_monitoring,
@@ -78,4 +81,21 @@ class BigQueryToAdsOCDagV2(base_dag.BaseDag):
 
 
 if os.getenv(_AIRFLOW_ENV):
-  dag = BigQueryToAdsOCDagV2(_DAG_NAME).create_dag()
+  with DAG(
+      _DAG_NAME,
+      default_args={
+          'owner': 'airflow',
+          'depends_on_past': False,
+          'email_on_failure': False,
+          'email_on_retry': False,
+          'retries': 1,
+          'retry_delay': timedelta(minutes=5),
+          'start_date': days_ago(1),
+      },
+      catchup=False,
+      schedule_interval=timedelta(days=1),
+  ) as dag:
+
+    start = DummyOperator(task_id='start')
+    bq_to_ads_task = BigQueryToAdsOCDagV2(_DAG_NAME).create_task(main_dag=dag)
+    start >> bq_to_ads_task

@@ -18,7 +18,7 @@ from typing import Any, Dict
 
 from airflow import models
 
-from plugins.pipeline_plugins.hooks import monitoring_hook as monitoring_hook_lib
+from pipeline_plugins.hooks import monitoring_hook as monitoring_hook_lib
 
 
 class MonitoringCleanupOperator(models.BaseOperator):

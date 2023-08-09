@@ -21,12 +21,12 @@ import json
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from airflow import exceptions
-from airflow.contrib.hooks import bigquery_hook
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 
-from plugins.pipeline_plugins.hooks import input_hook_interface
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import retry_utils
+from pipeline_plugins.hooks import input_hook_interface
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import retry_utils
 
 
 class MonitoringEntityMap(enum.Enum):
@@ -37,7 +37,7 @@ class MonitoringEntityMap(enum.Enum):
 
 _DEFAULT_PAGE_SIZE = 1000
 
-_BASE_BQ_HOOK_PARAMS = ('delegate_to', 'use_legacy_sql', 'location')
+_BASE_BQ_HOOK_PARAMS = ( 'use_legacy_sql', 'location', 'impersonation_chain')
 
 _LOG_SCHEMA_FIELDS = [
     {'name': 'dag_name', 'type': 'STRING', 'mode': 'REQUIRED'},
@@ -54,7 +54,7 @@ def _generate_zone_aware_timestamp() -> str:
 
 
 class MonitoringHook(
-    bigquery_hook.BigQueryHook, input_hook_interface.InputHookInterface):
+    BigQueryHook, input_hook_interface.InputHookInterface):
   """Custom hook monitoring TCRM.
 
   Attributes:
@@ -86,7 +86,7 @@ class MonitoringHook(
     for param in _BASE_BQ_HOOK_PARAMS:
       if param in kwargs:
         init_params_dict[param] = kwargs[param]
-    super().__init__(bigquery_conn_id=bq_conn_id, **init_params_dict)
+    super().__init__(gcp_conn_id=bq_conn_id, **init_params_dict)
 
     self.use_legacy_sql = False
     self.dag_name = dag_name
@@ -174,8 +174,6 @@ class MonitoringHook(
 
     for value, field in zip(values, _LOG_SCHEMA_FIELDS):
       row[field['name']] = value
-
-    row = {'json': row}
 
     return row
 

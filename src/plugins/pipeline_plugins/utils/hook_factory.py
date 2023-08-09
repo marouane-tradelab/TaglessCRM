@@ -35,16 +35,16 @@ Example usage:
 
 import enum
 
-from plugins.pipeline_plugins.hooks import ads_cm_hook_v2
-from plugins.pipeline_plugins.hooks import ads_oc_hook_v2
-from plugins.pipeline_plugins.hooks import ads_uac_hook
-from plugins.pipeline_plugins.hooks import bq_hook
-from plugins.pipeline_plugins.hooks import cm_hook
-from plugins.pipeline_plugins.hooks import ga4_hook
-from plugins.pipeline_plugins.hooks import ga_hook
-from plugins.pipeline_plugins.hooks import gcs_hook
-from plugins.pipeline_plugins.hooks import input_hook_interface
-from plugins.pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.hooks import ads_cm_hook_v2
+from pipeline_plugins.hooks import ads_oc_hook_v2
+from pipeline_plugins.hooks import ads_uac_hook
+from pipeline_plugins.hooks import bq_hook
+from pipeline_plugins.hooks import cm_hook
+from pipeline_plugins.hooks import ga4_hook
+from pipeline_plugins.hooks import ga_hook
+from pipeline_plugins.hooks import gcs_hook
+from pipeline_plugins.hooks import input_hook_interface
+from pipeline_plugins.hooks import output_hook_interface
 
 
 class InputHookType(enum.Enum):

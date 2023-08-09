@@ -33,8 +33,8 @@ from typing import Optional
 from airflow.exceptions import AirflowException
 from airflow.models import dag
 
-from dags import base_dag
-from plugins.pipeline_plugins.operators import monitoring_cleanup_operator
+import base_dag
+from pipeline_plugins.operators import monitoring_cleanup_operator
 
 
 # Airflow configuration variables.

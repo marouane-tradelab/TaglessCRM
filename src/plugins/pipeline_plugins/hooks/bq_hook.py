@@ -17,17 +17,17 @@
 
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
-from airflow.contrib.hooks import bigquery_hook
+from airflow.providers.google.cloud.hooks import bigquery as bigquery_hook
 from googleapiclient import errors as googleapiclient_errors
 
-from plugins.pipeline_plugins.hooks import input_hook_interface
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import retry_utils
+from pipeline_plugins.hooks import input_hook_interface
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import retry_utils
 
 _DEFAULT_PAGE_SIZE = 1000
 _PLATFORM = 'BigQuery'
-_BASE_BQ_HOOK_PARAMS = ('delegate_to', 'use_legacy_sql', 'location')
+_BASE_BQ_HOOK_PARAMS = ('impersonation_chain', 'use_legacy_sql', 'location')
 
 
 class BigQueryHook(
@@ -60,7 +60,7 @@ class BigQueryHook(
     for param in _BASE_BQ_HOOK_PARAMS:
       if param in kwargs:
         init_params_dict[param] = kwargs[param]
-    super().__init__(bigquery_conn_id=bq_conn_id, **init_params_dict)
+    super().__init__(gcp_conn_id=bq_conn_id, **init_params_dict)
 
     self.dataset_id = bq_dataset_id
     self.table_id = bq_table_id
@@ -129,12 +129,12 @@ class BigQueryHook(
     Returns:
       data: Table rows in the format of list of maps.
     """
-    fields = [field['name'] for field in query_results['schema']['fields']]
-    col_types = [field['type'] for field in query_results['schema']['fields']]
+    fields = [field.name for field in query_results['schema']]
+    col_types = [field.field_type for field in query_results['schema']]
     rows = query_results.get('rows', [])
     batch_data = []
     for row in rows:
-      values = [cell['v'] for cell in row['f']]
+      values = row.values()
       typed_values = [self._str_to_bq_type(value, type)
                       for value, type in zip(values, col_types)]
       data = dict(zip(fields, typed_values))
@@ -156,16 +156,19 @@ class BigQueryHook(
     Returns:
       query_results: Map containing the requested rows.
     """
-    query_results = bq_cursor.get_tabledata(
+    query_results = self.list_rows(
         dataset_id=self.dataset_id,
         table_id=self.table_id,
         max_results=max_results,
         start_index=start_index,
-        selected_fields=self.selected_fields)
-    if query_results and not query_results.get('schema'):
-      query_results['schema'] = bq_cursor.get_schema(self.dataset_id,
-                                                     self.table_id)
-    return query_results
+        selected_fields=self.selected_fields,
+        return_iterator=True)
+
+    query_results_dict = {'rows': list(query_results),
+                          'schema': query_results.schema,
+                          'totalRows': query_results.total_rows}
+
+    return query_results_dict
 
   def list_tables(self, dataset_id: Optional[str] = None,
                   prefix: str = '') -> List[str]:

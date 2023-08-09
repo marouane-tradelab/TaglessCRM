@@ -30,9 +30,9 @@ from typing import Any, Dict, List, Tuple
 import immutabledict
 import requests
 
-from plugins.pipeline_plugins.hooks import output_hook_interface
-from plugins.pipeline_plugins.utils import blob as blob_lib
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.utils import blob as blob_lib
+from pipeline_plugins.utils import errors
 
 _GA_EVENT_POST_URL = 'https://www.google-analytics.com/mp/collect'
 _GA_EVENT_VALIDATION_URL = 'https://www.google-analytics.com/debug/mp/collect'

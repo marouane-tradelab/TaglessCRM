@@ -16,7 +16,7 @@
 
 from typing import Any, Dict, Tuple
 
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.utils import errors
 
 Payload = Tuple[int, Dict[str, Any]]
 

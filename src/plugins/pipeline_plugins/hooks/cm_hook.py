@@ -35,9 +35,9 @@ import time
 from typing import Any, Dict, Generator, List, Tuple
 
 from gps_building_blocks.cloud.utils import cloud_auth
-from plugins.pipeline_plugins.hooks import output_hook_interface
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
+from pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
 
 _CONVERSION_REQUIRED_FIELDS = ('gclid',
                                'floodlightActivityId',

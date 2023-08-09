@@ -20,7 +20,7 @@ import abc
 
 from airflow.hooks import base_hook
 
-from plugins.pipeline_plugins.utils import blob
+from pipeline_plugins.utils import blob
 
 
 class OutputHookInterface(abc.ABC, base_hook.BaseHook):

@@ -19,9 +19,9 @@ from typing import Any, List, Dict, Optional
 
 from airflow import models
 
-from plugins.pipeline_plugins.hooks import monitoring_hook as monitoring
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import hook_factory
+from pipeline_plugins.hooks import monitoring_hook as monitoring
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import hook_factory
 
 
 class DataConnectorOperator(models.BaseOperator):

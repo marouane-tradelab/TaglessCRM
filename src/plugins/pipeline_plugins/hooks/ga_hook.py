@@ -25,10 +25,10 @@ import urllib.request
 
 from googleapiclient import errors as googleapiclient_errors
 
-from plugins.pipeline_plugins.hooks import output_hook_interface
-from plugins.pipeline_plugins.utils import blob
-from plugins.pipeline_plugins.utils import errors
-from plugins.pipeline_plugins.utils import retry_utils
+from pipeline_plugins.hooks import output_hook_interface
+from pipeline_plugins.utils import blob
+from pipeline_plugins.utils import errors
+from pipeline_plugins.utils import retry_utils
 
 _PAYLOAD_VERSION = '1'
 
